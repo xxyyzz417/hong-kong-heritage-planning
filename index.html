@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="以六個香港生活場景，慢慢梳理您的資產、牽掛與遺產分配意向。">
+  <meta name="theme-color" content="#4b2e16">
+  <title>讓愛繼續行走｜香港遺產規劃</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="略過連結" href="#人生時間軸">直接前往人生時間軸</a>
+
+  <div class="載入畫面" id="載入畫面" role="status" aria-live="polite" aria-label="正在準備場景">
+    <div class="載入內容">
+      <p class="載入題字">正在準備場景，請稍候</p>
+      <div class="載入軌道" aria-hidden="true"><span id="載入進度條"></span></div>
+      <p class="載入數值" id="載入數值">百分之零</p>
+      <button class="按鈕 按鈕-次要 載入替代" id="靜態繼續" type="button" hidden>以靜態內容繼續</button>
+    </div>
+  </div>
+
+  <header class="頁首" aria-label="主要導覽">
+    <a class="頁首名稱" href="#開篇">香港遺產規劃</a>
+    <a class="頁首行動" href="#免費諮詢">免費諮詢</a>
+  </header>
+
+  <main>
+    <section class="開篇" id="開篇" aria-labelledby="開篇標題">
+      <div class="開篇紋理" aria-hidden="true"></div>
+      <div class="開篇內容">
+        <p class="眉題">一段為家人而行的旅程</p>
+        <h1 id="開篇標題">
+          <span class="開篇起句">讓愛</span>
+          <span class="開篇續句">繼續行走</span>
+        </h1>
+        <div class="開篇下方">
+          <div class="開篇說明">
+            <p class="開篇引言">傳承從來不只是交代財產，而是把一生的牽掛妥善安放，讓愛在家人之間繼續行走。</p>
+            <p class="開篇提示">向下慢慢捲動，依照您的步伐前行</p>
+          </div>
+          <div class="開篇資訊" aria-label="旅程簡介">
+            <p><span>旅程</span><strong>六幕人生片段</strong></p>
+            <p><span>方式</span><strong>逐步梳理牽掛</strong></p>
+            <p><span>私隱</span><strong>只儲存在這部裝置</strong></p>
+          </div>
+          <div class="開篇行動">
+            <button class="按鈕 按鈕-主要" id="開始旅程" type="button">
+              開始這段旅程
+              <span aria-hidden="true">↓</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="人生時間軸" id="人生時間軸" aria-label="六幕人生時間軸">
+      <div class="場景舞台" id="場景舞台">
+        <canvas id="場景畫布" role="img" aria-label="第一幕，居家獨處整理老物件"></canvas>
+        <div class="畫面遮罩" aria-hidden="true"></div>
+        <div class="場景編號" aria-hidden="true"><span id="大型幕數">一</span><small>共六幕</small></div>
+
+        <article class="場景卡" id="場景卡" aria-live="polite">
+          <div class="漂浮標題">
+            <p class="場景情緒" id="場景情緒">第一幕｜平和懷舊</p>
+            <h2 id="場景標題">居家獨處整理老物件</h2>
+            <p class="場景畫面" id="場景畫面">晨光灑進睡房，您坐在藤椅上，慢慢翻開抽屜裡的銀行月結單與樓契，取出泛黃全家福輕拭相框，動作緩慢而細心。</p>
+          </div>
+          <p class="場景對話" id="場景對話">這些陪伴您多年的物件，您希望日後由哪位家人繼續保管？</p>
+          <div class="資產區" aria-label="這一幕涉及的安排">
+            <p>這一幕涉及</p>
+            <ul id="資產標籤">
+              <li>物業產權</li><li>流動資產</li><li>身份證明</li>
+            </ul>
+          </div>
+          <div class="對話選擇" aria-label="整理這一幕的想法">
+            <button class="選擇卡 選擇卡-建議" id="加入清單" type="button">
+              <span>建議：放進我的安心清單</span>
+              <small>建議：只儲存在這部裝置，稍後可更改</small>
+            </button>
+            <button class="選擇卡" id="稍後再想" type="button">
+              <span>稍後再想（不加入清單）</span>
+              <small>暫不加入清單，諮詢時可再討論</small>
+            </button>
+          </div>
+        </article>
+
+        <nav class="場景控制" aria-label="場景進度與切換">
+          <button class="幕切換 幕切換-上一幕" id="上一幕" type="button" aria-label="返回上一幕" hidden>
+            <span aria-hidden="true">←</span><span>返回上一幕</span>
+          </button>
+
+          <div class="進度區">
+            <p class="進度文字" id="進度文字">第一幕，共六幕｜整理舊物</p>
+            <ol class="進度線" id="進度線">
+              <li><button type="button" aria-label="前往第一幕，整理舊物" aria-current="step"><span>一</span></button></li>
+              <li><button type="button" aria-label="前往第二幕，同桌晚飯"><span>二</span></button></li>
+              <li><button type="button" aria-label="前往第三幕，老友閒聊"><span>三</span></button></li>
+              <li><button type="button" aria-label="前往第四幕，陪伴覆診"><span>四</span></button></li>
+              <li><button type="button" aria-label="前往第五幕，接送放學"><span>五</span></button></li>
+              <li><button type="button" aria-label="前往第六幕，安心梳理"><span>六</span></button></li>
+            </ol>
+          </div>
+
+          <button class="幕切換 幕切換-下一幕" id="下一幕" type="button" aria-label="前往下一幕">
+            <span>前往下一幕</span><span aria-hidden="true">→</span>
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <section class="安心清單" id="安心清單" aria-labelledby="清單標題">
+      <div>
+        <p class="眉題">您的牽掛，慢慢整理</p>
+        <h2 id="清單標題">我的安心清單</h2>
+        <p>這裡只整理您在六幕旅程中選下的事項，不會上載至任何地方。您可在免費諮詢時再作確認。</p>
+      </div>
+      <div class="清單內容" id="清單內容" aria-live="polite">
+        <p>您的清單目前仍是空白。這沒有問題，您可返回任何一幕慢慢選擇。</p>
+      </div>
+      <button class="文字按鈕" id="返回時間軸" type="button">返回時間軸查看</button>
+    </section>
+
+    <section class="免費諮詢" id="免費諮詢" aria-labelledby="諮詢標題">
+      <div class="諮詢主欄">
+        <p class="眉題">下一步，由您決定</p>
+        <h2 id="諮詢標題">與專員談一談，<br>把想法變得更清楚。</h2>
+        <p class="諮詢引言">免費諮詢不會要求您即時作出決定。您可選擇直接致電，或請專員在合適時間回電。</p>
+
+        <div class="聯絡選項">
+          <button class="聯絡卡" id="立即致電" type="button" disabled>
+            <span class="聯絡卡標題">立即致電</span>
+            <span>適合希望即時了解安排的人士</span>
+            <small>待確認：正式聯絡電話</small>
+          </button>
+          <button class="聯絡卡 聯絡卡-建議" id="要求回電" type="button">
+            <span class="建議標記">建議</span>
+            <span class="聯絡卡標題">要求專員回電</span>
+            <span>先選合適時段，毋須長時間等候</span>
+            <small>以逐步對話整理預約資料</small>
+          </button>
+        </div>
+      </div>
+
+      <aside class="信任側欄" aria-label="諮詢保障">
+        <section>
+          <h3>專員資料</h3>
+          <p>待確認：所屬機構、職銜、專業資格名稱、發證機構及可核實編號。</p>
+        </section>
+        <section>
+          <h3>您的私隱</h3>
+          <p>聯絡資料只用於這次諮詢安排。正式提交前，必須清楚展示資料用途、保存期限、查閱及更正方式。</p>
+        </section>
+        <section class="防詐提示">
+          <h3>防詐騙提示</h3>
+          <p>免費諮詢不會要求提供網上銀行密碼、提款卡密碼、一次性驗證碼或預先轉帳。如有懷疑，請先透過官方聯絡方式核實身分。</p>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="頁尾">
+    <p>本頁只作初步梳理，不構成法律、稅務或投資意見。正式安排前，請向具備相應資格的專業人士查詢。</p>
+    <button class="文字按鈕" id="清除記錄" type="button">清除這部裝置上的整理內容</button>
+  </footer>
+
+  <dialog class="回電對話" id="回電對話" aria-labelledby="回電標題">
+    <div class="對話頂部">
+      <div>
+        <p class="對話步驟" id="對話步驟">第一步，共三步</p>
+        <h2 id="回電標題">甚麼時候聯絡您較方便？</h2>
+      </div>
+      <button class="關閉按鈕" id="關閉回電" type="button" aria-label="關閉回電安排">×</button>
+    </div>
+    <div class="回電內容" id="回電內容"></div>
+    <p class="對話私隱">您的輸入只會暫存在這部裝置，現階段不會傳送。</p>
+  </dialog>
+
+  <noscript>
+    <section class="無程式內容">
+      <h2>請以靜態內容繼續</h2>
+      <p>您的瀏覽器未啟用互動功能。您仍可閱讀六幕內容，並直接聯絡專業人士查詢。</p>
+      <img src="video%20split%20to%20png%20for%20scrolltriger/ezgif-frame-001.png" alt="長者在家中整理全家福與文件">
+    </section>
+  </noscript>
+
+  <script src="assets/vendor/gsap.min.js"></script>
+  <script src="assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

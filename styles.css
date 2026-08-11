@@ -1,0 +1,1312 @@
+:root {
+  --深松石: #514631;
+  --墨綠: #211f1b;
+  --港灣綠: #8d7756;
+  --瓷白: #eee6d7;
+  --晨霧: #c9bca5;
+  --暖金: #b79a69;
+  --亮金: #ead8b5;
+  --深木: #2c2822;
+  --純白: #f5edde;
+  --錯誤紅: #8d2f2f;
+  --正文尺寸: 1.25rem;
+  --圓角: 1.25rem;
+  --陰影: 0 1.5rem 4rem rgba(36, 23, 14, 0.34);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+  background: var(--墨綠);
+}
+
+body {
+  margin: 0;
+  color: var(--墨綠);
+  background: var(--瓷白);
+  font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  font-size: var(--正文尺寸);
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+small {
+  font-size: 1.25rem;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  min-width: 3rem;
+  min-height: 3rem;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 0.25rem solid var(--亮金);
+  outline-offset: 0.25rem;
+}
+
+.略過連結 {
+  position: fixed;
+  z-index: 1000;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--純白);
+  background: var(--墨綠);
+  transform: translateY(-160%);
+}
+
+.略過連結:focus {
+  transform: translateY(0);
+}
+
+.載入畫面 {
+  position: fixed;
+  z-index: 900;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--純白);
+  background: var(--墨綠);
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.載入畫面[hidden] {
+  display: none;
+}
+
+.載入畫面.已完成 {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.載入內容 {
+  width: min(32rem, calc(100% - 3rem));
+  text-align: center;
+}
+
+.載入題字 {
+  margin: 0 0 1.25rem;
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.載入軌道 {
+  height: 0.75rem;
+  overflow: hidden;
+  border: 0.125rem solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+}
+
+.載入軌道 span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--暖金);
+  transition: width 0.2s ease;
+}
+
+.載入數值 {
+  margin: 0.75rem 0 0;
+}
+
+.載入替代 {
+  margin-top: 1.5rem;
+}
+
+.頁首 {
+  position: fixed;
+  z-index: 80;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100%;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem clamp(1rem, 4vw, 4rem);
+  color: var(--純白);
+  background: linear-gradient(to bottom, rgba(24, 23, 20, 0.84), transparent);
+  pointer-events: none;
+}
+
+.頁首 a {
+  min-height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.頁首名稱 {
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.頁首行動 {
+  padding: 0.5rem 1.25rem;
+  color: var(--墨綠) !important;
+  border: 0.125rem solid var(--晨霧);
+  border-radius: 999px;
+  background: var(--晨霧);
+  font-weight: 700;
+}
+
+.開篇 {
+  position: relative;
+  min-height: max(48rem, 100svh);
+  overflow: hidden;
+  padding: 6.5rem clamp(1.25rem, 4vw, 4rem) clamp(2rem, 4vw, 4rem);
+  color: var(--純白);
+  background:
+    linear-gradient(to bottom, rgba(20, 19, 17, 0.48) 0%, rgba(20, 19, 17, 0.72) 52%, rgba(20, 19, 17, 0.9) 100%),
+    radial-gradient(circle at 50% 44%, transparent 15%, rgba(20, 19, 17, 0.42) 78%),
+    url("./video split to png for scrolltriger/ezgif-frame-001.png") center / cover no-repeat;
+}
+
+.開篇::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: clamp(8rem, 18vh, 13rem);
+  background: repeating-linear-gradient(90deg, transparent 0 1.35rem, rgba(234, 216, 181, 0.12) 1.35rem 1.43rem);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+  pointer-events: none;
+}
+
+.開篇紋理 {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(234, 216, 181, 0.035) 0.0625rem, transparent 0.0625rem),
+    linear-gradient(90deg, rgba(234, 216, 181, 0.025) 0.0625rem, transparent 0.0625rem);
+  background-size: 3rem 3rem;
+  pointer-events: none;
+}
+
+.開篇內容 {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  width: 100%;
+  min-height: calc(max(48rem, 100svh) - 10.5rem);
+  grid-template-rows: auto 1fr auto;
+}
+
+.眉題 {
+  margin: 0 0 1rem;
+  color: var(--暖金);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.開篇 h1 {
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  gap: 0.06em;
+  width: 100%;
+  margin: 0;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-size: clamp(4.8rem, 11.4vw, 11rem);
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -0.09em;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 0.25rem 2rem rgba(0, 0, 0, 0.34);
+}
+
+.開篇起句 {
+  color: var(--亮金);
+  background: repeating-linear-gradient(90deg, var(--亮金) 0 0.32rem, rgba(234, 216, 181, 0.58) 0.32rem 0.46rem);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.開篇續句 {
+  color: var(--亮金);
+}
+
+.開篇下方 {
+  display: grid;
+  grid-template-columns: minmax(20rem, 32rem) minmax(25rem, 1fr) auto;
+  align-items: end;
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+
+.開篇引言 {
+  max-width: 32rem;
+  margin: 0;
+  font-size: clamp(1.25rem, 1.55vw, 1.45rem);
+  line-height: 1.72;
+}
+
+.開篇提示 {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.1rem 0 0;
+  color: rgba(245, 237, 222, 0.82);
+  font-size: 1.25rem;
+}
+
+.開篇提示::before {
+  content: "";
+  width: 3rem;
+  height: 0.125rem;
+  background: var(--暖金);
+}
+
+.開篇資訊 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.4vw, 2.5rem);
+}
+
+.開篇資訊 p {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding-top: 0.65rem;
+  border-top: 0.0625rem solid rgba(234, 216, 181, 0.52);
+}
+
+.開篇資訊 span,
+.開篇資訊 strong {
+  font-size: 1.25rem;
+}
+
+.開篇資訊 span {
+  color: var(--暖金);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.開篇資訊 strong {
+  color: var(--純白);
+  font-weight: 600;
+}
+
+.開篇行動 {
+  display: grid;
+  place-items: end;
+}
+
+.開篇 .按鈕-主要 {
+  width: clamp(8.5rem, 10vw, 10rem);
+  min-width: clamp(8.5rem, 10vw, 10rem);
+  height: clamp(8.5rem, 10vw, 10rem);
+  padding: 1.25rem;
+  color: var(--純白);
+  border: 0.125rem solid rgba(234, 216, 181, 0.8);
+  border-radius: 50%;
+  background: rgba(33, 31, 27, 0.36);
+  box-shadow: none;
+  backdrop-filter: blur(0.35rem);
+}
+
+.開篇 .按鈕-主要:hover {
+  color: var(--墨綠);
+  background: var(--亮金);
+}
+
+.按鈕 {
+  display: inline-flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.按鈕-主要 {
+  color: var(--墨綠);
+  background: var(--暖金);
+  box-shadow: 0 0.75rem 2.5rem rgba(216, 170, 97, 0.2);
+}
+
+.按鈕-主要:hover {
+  background: var(--亮金);
+}
+
+.按鈕-次要 {
+  color: var(--純白);
+  border: 0.125rem solid currentColor;
+  background: transparent;
+}
+
+.人生時間軸 {
+  position: relative;
+  color: var(--純白);
+  background: var(--墨綠);
+}
+
+.場景舞台 {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  min-height: 46rem;
+  overflow: hidden;
+  background: #2b1b10;
+}
+
+#場景畫布 {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.畫面遮罩 {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(36, 23, 14, 0.48) 0%, transparent 28%),
+    linear-gradient(to top, rgba(36, 23, 14, 0.72) 0%, transparent 34%),
+    radial-gradient(circle at center, transparent 48%, rgba(36, 23, 14, 0.3) 100%);
+  pointer-events: none;
+}
+
+.場景編號 {
+  position: absolute;
+  top: 5.5rem;
+  right: clamp(1.25rem, 5vw, 5rem);
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.場景編號 span {
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-size: clamp(5rem, 12vw, 10rem);
+  line-height: 0.8;
+  color: rgba(255, 255, 255, 0.14);
+}
+
+.場景編號 small {
+  font-size: 1.25rem;
+}
+
+.場景卡 {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  --標題左: 55%;
+  --標題頂: 12%;
+  --標題寬: 39%;
+  --對話左: 58%;
+  --對話頂: 38%;
+  --對話寬: 36%;
+  --資產左: 56%;
+  --資產頂: 55%;
+  --資產寬: 38%;
+  --選擇左: 54%;
+  --選擇頂: 66%;
+  --選擇寬: 41%;
+}
+
+.漂浮標題,
+.場景對話,
+.資產區,
+.對話選擇 {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+  color: var(--純白);
+  text-shadow: 0 0.125rem 0.2rem rgba(36, 23, 14, 0.96), 0 0.4rem 1.2rem rgba(36, 23, 14, 0.88);
+  transition: left 0.34s linear, top 0.34s linear, width 0.34s linear;
+  pointer-events: auto;
+}
+
+.漂浮標題 {
+  top: max(var(--標題頂), 5.5rem);
+  left: max(var(--標題左), clamp(1rem, 4vw, 4rem));
+  width: var(--標題寬);
+}
+
+.漂浮標題::before {
+  content: "";
+  display: block;
+  width: 4rem;
+  height: 0.16rem;
+  margin-bottom: 0.75rem;
+  background: var(--暖金);
+  box-shadow: 0 0.25rem 1rem rgba(36, 23, 14, 0.55);
+}
+
+.場景情緒 {
+  margin: 0 0 0.5rem;
+  color: var(--亮金);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.場景卡 h2 {
+  margin: 0;
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  line-height: 1.16;
+}
+
+.場景畫面 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.場景對話 {
+  top: var(--對話頂);
+  left: var(--對話左);
+  width: var(--對話寬);
+  font-size: clamp(1.3rem, 2.2vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.資產區 {
+  top: var(--資產頂);
+  left: var(--資產左);
+  width: var(--資產寬);
+}
+
+.資產區 > p {
+  margin: 0 0 0.5rem;
+  color: var(--亮金);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.資產區 ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.資產區 li {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.資產區 li:not(:last-child)::after {
+  content: "·";
+  margin-left: 0.5rem;
+  color: var(--暖金);
+}
+
+.對話選擇 {
+  top: var(--選擇頂);
+  left: var(--選擇左);
+  width: var(--選擇寬);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.選擇卡 {
+  min-height: 4rem;
+  padding: 0.55rem 0;
+  color: var(--純白);
+  border: 0;
+  border-bottom: 0.15rem solid rgba(240, 211, 151, 0.72);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  text-shadow: 0 0.125rem 0.2rem rgba(36, 23, 14, 0.96), 0 0.4rem 1.2rem rgba(36, 23, 14, 0.88);
+  cursor: pointer;
+}
+
+.選擇卡 span,
+.選擇卡 small {
+  display: block;
+}
+
+.選擇卡 span {
+  font-weight: 800;
+}
+
+.選擇卡 small {
+  margin-top: 0.3rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.選擇卡-建議 {
+  border-color: var(--亮金);
+}
+
+.選擇卡.已選擇 {
+  color: var(--亮金);
+  border-color: var(--亮金);
+  background: transparent;
+}
+
+.選擇卡.已選擇 small {
+  color: var(--亮金);
+}
+
+.停留提示 {
+  position: absolute;
+  z-index: 4;
+  right: clamp(1rem, 5vw, 5rem);
+  bottom: 9.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  color: var(--墨綠);
+  background: rgba(255, 247, 230, 0.94);
+  font-size: 1.25rem;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  pointer-events: none;
+}
+
+.停留提示.顯示 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.場景控制 {
+  position: absolute;
+  z-index: 5;
+  right: clamp(1rem, 4vw, 4rem);
+  bottom: 1.25rem;
+  left: clamp(1rem, 4vw, 4rem);
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(30rem, 3fr) minmax(10rem, 1fr);
+  align-items: end;
+  gap: 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 0.0625rem solid rgba(201, 150, 61, 0.88);
+  border-radius: 1.25rem;
+  background: rgba(50, 31, 18, 0.66);
+  box-shadow: inset 0 0 0 0.28rem rgba(255, 247, 230, 0.025), 0 1rem 3rem rgba(36, 23, 14, 0.28);
+  backdrop-filter: blur(0.9rem) saturate(1.05);
+}
+
+.幕切換 {
+  min-height: 3.5rem;
+  padding: 0.5rem 1rem;
+  color: var(--純白);
+  border: 0.125rem solid rgba(240, 211, 151, 0.82);
+  border-radius: 999px;
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.幕切換[hidden] {
+  visibility: hidden;
+  display: block;
+  pointer-events: none;
+}
+
+.幕切換-下一幕 {
+  justify-self: end;
+}
+
+.進度區 {
+  min-width: 0;
+}
+
+.進度文字 {
+  margin: 0 0 0.5rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.進度線 {
+  --旅程進度: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.進度線::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 8.33%;
+  left: 8.33%;
+  height: 0.125rem;
+  background: rgba(234, 216, 181, 0.28);
+}
+
+.進度線::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 8.33%;
+  width: 83.34%;
+  height: 0.125rem;
+  background: var(--亮金);
+  transform: scaleX(var(--旅程進度));
+  transform-origin: left center;
+}
+
+.進度線 li {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.進度線 button {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  place-items: center;
+  color: var(--純白);
+  border: 0.125rem solid rgba(234, 216, 181, 0.68);
+  border-radius: 50%;
+  background: rgba(33, 31, 27, 0.56);
+  backdrop-filter: blur(0.5rem);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.進度線 button[aria-current="step"] {
+  color: var(--墨綠);
+  border-color: var(--亮金);
+  background: var(--亮金);
+  box-shadow: 0 0 0 0.25rem rgba(234, 216, 181, 0.18);
+}
+
+.安心清單,
+.免費諮詢 {
+  padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 7vw, 8rem);
+}
+
+.安心清單 {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.8fr) minmax(22rem, 1.2fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  background:
+    linear-gradient(rgba(234, 211, 155, 0.92), rgba(234, 211, 155, 0.92)),
+    repeating-linear-gradient(105deg, transparent 0 2rem, rgba(75, 46, 22, 0.04) 2rem 2.05rem);
+}
+
+.安心清單 h2,
+.免費諮詢 h2 {
+  margin: 0;
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-size: clamp(2.6rem, 6vw, 5.5rem);
+  line-height: 1.08;
+}
+
+.安心清單 p {
+  max-width: 38rem;
+}
+
+.清單內容 {
+  align-self: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 0.125rem solid var(--深松石);
+  border-radius: var(--圓角);
+  background: rgba(255, 247, 230, 0.58);
+}
+
+.清單內容 ul {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.清單內容 li {
+  padding-bottom: 1rem;
+  border-bottom: 0.0625rem solid rgba(75, 46, 22, 0.28);
+}
+
+.清單內容 li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.清單內容 strong,
+.清單內容 span {
+  display: block;
+}
+
+.清單內容 span {
+  margin-top: 0.25rem;
+  color: #5f3e20;
+}
+
+.文字按鈕 {
+  width: fit-content;
+  padding: 0.5rem 0;
+  color: inherit;
+  border: 0;
+  border-bottom: 0.125rem solid currentColor;
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.安心清單 > .文字按鈕 {
+  grid-column: 1 / -1;
+}
+
+.免費諮詢 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(20rem, 0.7fr);
+  gap: clamp(3rem, 8vw, 8rem);
+  color: var(--純白);
+  background: var(--深松石);
+}
+
+.諮詢引言 {
+  max-width: 42rem;
+  margin: 2rem 0;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 1.35rem;
+}
+
+.聯絡選項 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.聯絡卡 {
+  position: relative;
+  min-height: 12rem;
+  padding: 1.5rem;
+  color: var(--純白);
+  border: 0.125rem solid rgba(240, 211, 151, 0.62);
+  border-radius: var(--圓角);
+  background: rgba(50, 31, 18, 0.26);
+  text-align: left;
+  cursor: pointer;
+}
+
+.聯絡卡:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.聯絡卡 span,
+.聯絡卡 small {
+  display: block;
+}
+
+.聯絡卡標題 {
+  margin-bottom: 0.75rem;
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.聯絡卡 small {
+  margin-top: 1rem;
+  color: var(--亮金);
+}
+
+.聯絡卡-建議 {
+  color: var(--墨綠);
+  border-color: var(--暖金);
+  background: var(--暖金);
+}
+
+.聯絡卡-建議 small {
+  color: var(--墨綠);
+}
+
+.建議標記 {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  color: var(--純白);
+  background: var(--深松石);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.信任側欄 {
+  align-self: start;
+  border-top: 0.125rem solid var(--暖金);
+}
+
+.信任側欄 section {
+  padding: 1.5rem 0;
+  border-bottom: 0.0625rem solid rgba(240, 211, 151, 0.28);
+}
+
+.信任側欄 h3,
+.信任側欄 p {
+  margin: 0;
+}
+
+.信任側欄 h3 {
+  margin-bottom: 0.5rem;
+  color: var(--亮金);
+  font-size: 1.25rem;
+}
+
+.信任側欄 p {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.防詐提示 {
+  padding-right: 1rem !important;
+  padding-left: 1rem !important;
+  border: 0.125rem solid var(--暖金) !important;
+}
+
+.頁尾 {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem clamp(1.25rem, 7vw, 8rem);
+  color: var(--純白);
+  background: var(--墨綠);
+  font-size: 1.25rem;
+}
+
+.頁尾 p {
+  max-width: 54rem;
+}
+
+.頁尾 .文字按鈕 {
+  flex: 0 0 auto;
+}
+
+.回電對話 {
+  width: min(44rem, calc(100% - 2rem));
+  max-height: calc(100svh - 2rem);
+  padding: 0;
+  color: var(--墨綠);
+  border: 0;
+  border-radius: var(--圓角);
+  background: var(--瓷白);
+  box-shadow: var(--陰影);
+}
+
+.回電對話::backdrop {
+  background: rgba(36, 23, 14, 0.84);
+  backdrop-filter: blur(0.3rem);
+}
+
+.對話頂部 {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 0.0625rem solid rgba(75, 46, 22, 0.22);
+}
+
+.對話步驟 {
+  margin: 0 0 0.4rem;
+  color: var(--港灣綠);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.對話頂部 h2 {
+  margin: 0;
+  font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.25;
+}
+
+.關閉按鈕 {
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 auto;
+  padding: 0;
+  color: var(--墨綠);
+  border: 0.125rem solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.75rem;
+  cursor: pointer;
+}
+
+.回電內容 {
+  padding: 1.5rem;
+}
+
+.回電選項 {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.回電選項 button {
+  min-height: 4.5rem;
+  padding: 1rem;
+  color: var(--墨綠);
+  border: 0.125rem solid var(--深松石);
+  border-radius: 0.75rem;
+  background: transparent;
+  text-align: left;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.回電欄位 label,
+.回電欄位 input,
+.回電欄位 small {
+  display: block;
+  width: 100%;
+}
+
+.回電欄位 label {
+  margin-bottom: 0.75rem;
+  font-weight: 800;
+}
+
+.回電欄位 input {
+  min-height: 3.75rem;
+  padding: 0.75rem;
+  border: 0.125rem solid var(--深松石);
+  border-radius: 0.5rem;
+  background: var(--純白);
+  font-size: 1.25rem;
+}
+
+.回電欄位 small {
+  margin-top: 0.5rem;
+  color: #654625;
+}
+
+.回電操作 {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.回電操作 button {
+  min-height: 3.5rem;
+  padding: 0.65rem 1.25rem;
+  border: 0.125rem solid var(--深松石);
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.回電操作 .繼續按鈕 {
+  color: var(--純白);
+  background: var(--深松石);
+}
+
+.回電摘要 {
+  padding: 1rem;
+  border-left: 0.25rem solid var(--暖金);
+  background: var(--晨霧);
+}
+
+.回電摘要 p {
+  margin: 0.4rem 0;
+}
+
+.對話私隱 {
+  margin: 0;
+  padding: 0 1.5rem 1.5rem;
+  color: #654625;
+  font-size: 1.25rem;
+}
+
+.無程式內容 {
+  padding: 3rem 1.5rem;
+}
+
+.無程式內容 img {
+  display: block;
+  width: min(100%, 64rem);
+  height: auto;
+}
+
+@media (max-width: 70rem) {
+  .開篇下方 {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .開篇說明 {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .開篇資訊 {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 1.25rem;
+  }
+
+  .開篇行動 {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .場景控制 {
+    grid-template-columns: 10rem minmax(20rem, 1fr) 10rem;
+  }
+
+  .場景卡 {
+    width: 100%;
+  }
+}
+
+@media (max-width: 52rem) {
+  .頁首 {
+    min-height: 4rem;
+  }
+
+  .頁首名稱 {
+    font-size: 1.25rem;
+  }
+
+  .開篇內容 {
+    min-height: calc(max(48rem, 100svh) - 9.5rem);
+  }
+
+  .開篇 h1 {
+    font-size: clamp(4.7rem, 11.8vw, 7rem);
+  }
+
+  .場景舞台 {
+    min-height: 52rem;
+  }
+
+  .畫面遮罩 {
+    background: linear-gradient(to top, rgba(36, 23, 14, 0.96) 0%, rgba(75, 46, 22, 0.62) 55%, rgba(75, 46, 22, 0.06) 100%);
+  }
+
+  .場景編號 {
+    top: 4.5rem;
+  }
+
+  .場景卡 {
+    inset: 0;
+    width: 100%;
+    max-height: none;
+  }
+
+  .場景畫面 {
+    display: none;
+  }
+
+  .場景控制 {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .進度區 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .幕切換 {
+    grid-row: 2;
+  }
+
+  .幕切換-上一幕 {
+    grid-column: 1;
+  }
+
+  .幕切換-下一幕 {
+    grid-column: 2;
+    width: 100%;
+  }
+
+  .安心清單,
+  .免費諮詢 {
+    grid-template-columns: 1fr;
+  }
+
+  .安心清單 > .文字按鈕 {
+    grid-column: auto;
+  }
+
+  .頁尾 {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 36rem) {
+  :root {
+    --正文尺寸: 1.25rem;
+  }
+
+  .頁首行動 {
+    padding: 0.4rem 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .開篇 h1 {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.04em;
+    font-size: clamp(4rem, 19vw, 5.7rem);
+    line-height: 0.86;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .開篇續句 {
+    align-self: flex-end;
+    white-space: nowrap;
+  }
+
+  .開篇下方 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .開篇說明,
+  .開篇行動 {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .開篇資訊 {
+    display: none;
+  }
+
+  .開篇行動 {
+    place-items: start;
+  }
+
+  .開篇 .按鈕-主要 {
+    width: 8.25rem;
+    min-width: 8.25rem;
+    height: 8.25rem;
+  }
+
+  .場景卡 {
+    inset: 0;
+    padding: 0;
+  }
+
+  .場景卡 h2 {
+    font-size: 1.8rem;
+  }
+
+  .場景對話 {
+    font-size: 1.25rem;
+  }
+
+  .對話選擇 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .選擇卡 {
+    min-height: 4.5rem;
+  }
+
+  .選擇卡 small {
+    display: none;
+  }
+
+  .場景控制 {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
+  }
+
+  .進度線 button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .幕切換 span[aria-hidden="true"] {
+    display: none;
+  }
+
+  .聯絡選項 {
+    grid-template-columns: 1fr;
+  }
+
+  .回電操作 {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .畫面遮罩 {
+    background: Canvas;
+    opacity: 0.86;
+  }
+
+  .進度線 button[aria-current="step"] {
+    outline: 0.25rem solid Highlight;
+  }
+}
