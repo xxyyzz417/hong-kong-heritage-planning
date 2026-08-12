@@ -346,10 +346,10 @@ function 播放文案浮現() {
   window.gsap.set(文案區塊, { autoAlpha: 0, y: 22 });
   文案時間軸 = window.gsap.timeline();
   文案時間軸
-    .to(文案區塊[0], { autoAlpha: 1, y: 0, duration: 0.48, ease: "power2.out" }, 0)
-    .to(文案區塊[1], { autoAlpha: 1, y: 0, duration: 0.48, ease: "power2.out" }, 0.55)
-    .to(文案區塊[2], { autoAlpha: 1, y: 0, duration: 0.48, ease: "power2.out" }, 1.1)
-    .to(文案區塊[3], { autoAlpha: 1, y: 0, duration: 0.52, ease: "power2.out" }, 1.65);
+    .to(文案區塊[0], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 0)
+    .to(文案區塊[1], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 1.5)
+    .to(文案區塊[2], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 3)
+    .to(文案區塊[3], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 4.6);
 }
 
 function 更新場景(幕索引, 不使用動畫 = false) {
@@ -409,7 +409,7 @@ function 停止自動捲動() {
   下一幕按鈕.disabled = false;
 }
 
-function 勻速捲動至(目標位置, 時長 = 3400) {
+function 勻速捲動至(目標位置, 時長 = 4200) {
   停止自動捲動();
   if (減少動態) {
     window.scrollTo(0, 目標位置);

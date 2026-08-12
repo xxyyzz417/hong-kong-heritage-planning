@@ -31,7 +31,7 @@ async function 測試相鄰幕勻速慢放(瀏覽器) {
   }
 
   const 耗時 = 樣本.at(-1).時間;
-  assert.ok(耗時 >= 3000 && 耗時 <= 4500, `相鄰幕應在三至四點五秒內勻速完成，實際為 ${耗時} 毫秒`);
+  assert.ok(耗時 >= 4000 && 耗時 <= 4700, `相鄰幕應在四至四點七秒內勻速完成，實際為 ${耗時} 毫秒`);
 
   const 中段樣本 = 樣本.filter((樣本) => 樣本.影格 > 5 && 樣本.影格 < 44);
   assert.ok(中段樣本.length >= 8, "應取得足夠的中段影格樣本");
@@ -60,6 +60,32 @@ async function 測試文案依序浮現(瀏覽器) {
   assert.ok(透明度.標題 > 透明度.提問, `標題應先於提問浮現：${JSON.stringify(透明度)}`);
   assert.equal(透明度.資產, 0, "資產安排在第三段才可浮現");
   assert.equal(透明度.選項, 0, "安心清單選項在最後一段才可浮現");
+  await 頁面.close();
+}
+
+async function 測試每段文案緩慢浮現(瀏覽器) {
+  const 頁面 = await 開啟時間軸(瀏覽器);
+  await 頁面.getByRole("button", { name: "前往下一幕" }).click();
+  await 頁面.waitForFunction(() => document.getElementById("場景情緒").textContent.includes("第二幕"), null, { timeout: 5000 });
+
+  await 頁面.waitForTimeout(650);
+  const 第一時間點 = await 頁面.evaluate(() => ({
+    標題: Number(getComputedStyle(document.querySelector(".漂浮標題")).opacity),
+    提問: Number(getComputedStyle(document.querySelector(".場景對話")).opacity)
+  }));
+  assert.ok(第一時間點.標題 > 0 && 第一時間點.標題 < 1, `標題應仍在緩慢浮現：${JSON.stringify(第一時間點)}`);
+  assert.equal(第一時間點.提問, 0, "標題尚未完成時，提問不可開始浮現");
+
+  await 頁面.waitForTimeout(3700);
+  const 第四時間點 = await 頁面.evaluate(() => ({
+    資產: Number(getComputedStyle(document.querySelector(".資產區")).opacity),
+    選項: Number(getComputedStyle(document.querySelector(".對話選擇")).opacity)
+  }));
+  assert.equal(第四時間點.選項, 0, `最後一段需保留更長停頓：${JSON.stringify(第四時間點)}`);
+
+  await 頁面.waitForTimeout(1300);
+  const 最終選項透明度 = await 頁面.evaluate(() => Number(getComputedStyle(document.querySelector(".對話選擇")).opacity));
+  assert.ok(最終選項透明度 > 0.95, `約五點六秒後應完成四段浮現，實際透明度為 ${最終選項透明度}`);
   await 頁面.close();
 }
 
@@ -100,6 +126,8 @@ async function 測試手機文案依閱讀順序排列(瀏覽器) {
     console.log("通過：相鄰幕勻速慢放");
     await 測試文案依序浮現(瀏覽器);
     console.log("通過：文案依序浮現");
+    await 測試每段文案緩慢浮現(瀏覽器);
+    console.log("通過：每段文案緩慢浮現");
     await 測試手機文案依閱讀順序排列(瀏覽器);
     console.log("通過：手機文案依閱讀順序排列");
   } finally {
