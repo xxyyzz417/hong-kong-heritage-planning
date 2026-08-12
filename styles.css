@@ -453,7 +453,13 @@ input:focus-visible {
   color: var(--純白);
   text-shadow: 0 0.125rem 0.2rem rgba(36, 23, 14, 0.96), 0 0.4rem 1.2rem rgba(36, 23, 14, 0.88);
   transition: left 0.34s linear, top 0.34s linear, width 0.34s linear;
+  will-change: opacity, transform;
   pointer-events: auto;
+}
+
+.幕切換:disabled {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .漂浮標題 {

@@ -137,6 +137,8 @@ let 當前影格 = 1;
 let 待繪影格 = 1;
 let 繪製請求 = 0;
 let 滾動觸發器 = null;
+let 自動捲動請求 = 0;
+let 文案時間軸 = null;
 let 載入逾時計時器 = 0;
 let 整理狀態 = 讀取整理狀態();
 
@@ -282,13 +284,11 @@ function 取得逐幀佈局(影格編號) {
 }
 
 function 轉為移動版佈局(佈局) {
-  const 文字靠右 = 佈局.標題[0] > 40;
-  const 分散顯示 = Math.abs(佈局.資產[0] - 佈局.標題[0]) > 35;
   return {
-    標題: [文字靠右 ? 17 : 4, 15, 79],
-    對話: [文字靠右 ? 10 : 4, 分散顯示 ? 45 : 40, 86],
-    資產: [分散顯示 ? 48 : 4, 分散顯示 ? 34 : 55, 分散顯示 ? 48 : 92],
-    選擇: [4, 66, 92]
+    標題: [4, 15, 92],
+    對話: [4, 37, 92],
+    資產: [4, 51, 92],
+    選擇: [4, 67, 92]
   };
 }
 
@@ -321,6 +321,37 @@ function 取得最近幕(進度) {
   ), 0);
 }
 
+function 取得文案區塊() {
+  return [
+    場景卡.querySelector(".漂浮標題"),
+    場景對話,
+    場景卡.querySelector(".資產區"),
+    場景卡.querySelector(".對話選擇")
+  ];
+}
+
+function 播放文案浮現() {
+  const 文案區塊 = 取得文案區塊();
+  if (文案時間軸) 文案時間軸.kill();
+
+  if (減少動態 || !window.gsap) {
+    文案區塊.forEach((區塊) => {
+      區塊.style.opacity = "1";
+      區塊.style.visibility = "visible";
+      區塊.style.transform = "none";
+    });
+    return;
+  }
+
+  window.gsap.set(文案區塊, { autoAlpha: 0, y: 22 });
+  文案時間軸 = window.gsap.timeline();
+  文案時間軸
+    .to(文案區塊[0], { autoAlpha: 1, y: 0, duration: 0.48, ease: "power2.out" }, 0)
+    .to(文案區塊[1], { autoAlpha: 1, y: 0, duration: 0.48, ease: "power2.out" }, 0.55)
+    .to(文案區塊[2], { autoAlpha: 1, y: 0, duration: 0.48, ease: "power2.out" }, 1.1)
+    .to(文案區塊[3], { autoAlpha: 1, y: 0, duration: 0.52, ease: "power2.out" }, 1.65);
+}
+
 function 更新場景(幕索引, 不使用動畫 = false) {
   if (幕索引 === 當前幕 && !不使用動畫) return;
   當前幕 = 幕索引;
@@ -351,19 +382,14 @@ function 更新場景(幕索引, 不使用動畫 = false) {
     更新選擇按鈕();
   };
 
-  if (!不使用動畫 && !減少動態 && window.gsap) {
-    window.gsap.to(場景卡, {
-      opacity: 0,
-      y: 12,
-      duration: 0.18,
-      onComplete: () => {
-        套用內容();
-        window.gsap.to(場景卡, { opacity: 1, y: 0, duration: 0.38, ease: "power2.out" });
-      }
+  套用內容();
+  if (不使用動畫) {
+    取得文案區塊().forEach((區塊) => {
+      區塊.style.opacity = "1";
+      區塊.style.visibility = "visible";
+      區塊.style.transform = "none";
     });
-  } else {
-    套用內容();
-  }
+  } else 播放文案浮現();
 }
 
 function 處理進度(進度) {
@@ -375,7 +401,42 @@ function 處理進度(進度) {
   if (幕索引 !== 當前幕) 更新場景(幕索引);
 }
 
-function 前往幕(幕索引) {
+function 停止自動捲動() {
+  if (!自動捲動請求) return;
+  window.cancelAnimationFrame(自動捲動請求);
+  自動捲動請求 = 0;
+  上一幕按鈕.disabled = false;
+  下一幕按鈕.disabled = false;
+}
+
+function 勻速捲動至(目標位置, 時長 = 3400) {
+  停止自動捲動();
+  if (減少動態) {
+    window.scrollTo(0, 目標位置);
+    return;
+  }
+
+  const 起點位置 = window.scrollY;
+  const 開始時間 = window.performance.now();
+  上一幕按鈕.disabled = true;
+  下一幕按鈕.disabled = true;
+
+  const 更新位置 = (現在時間) => {
+    const 進度 = Math.min(1, (現在時間 - 開始時間) / 時長);
+    window.scrollTo(0, 起點位置 + (目標位置 - 起點位置) * 進度);
+    if (進度 < 1) {
+      自動捲動請求 = window.requestAnimationFrame(更新位置);
+      return;
+    }
+    自動捲動請求 = 0;
+    上一幕按鈕.disabled = false;
+    下一幕按鈕.disabled = false;
+  };
+
+  自動捲動請求 = window.requestAnimationFrame(更新位置);
+}
+
+function 前往幕(幕索引, 勻速播放 = false) {
   const 安全索引 = Math.max(0, Math.min(5, 幕索引));
   if (!滾動觸發器) {
     更新場景(安全索引);
@@ -383,7 +444,8 @@ function 前往幕(幕索引) {
     return;
   }
   const 目標位置 = 滾動觸發器.start + 幕定位進度[安全索引] * (滾動觸發器.end - 滾動觸發器.start);
-  window.scrollTo({ top: 目標位置, behavior: 減少動態 ? "auto" : "smooth" });
+  if (勻速播放) 勻速捲動至(目標位置);
+  else window.scrollTo({ top: 目標位置, behavior: 減少動態 ? "auto" : "smooth" });
 }
 
 function 建立滾動體驗() {
@@ -622,10 +684,10 @@ document.getElementById("開始旅程").addEventListener("click", () => {
 
 document.getElementById("返回時間軸").addEventListener("click", () => 前往幕(當前幕));
 進度按鈕.forEach((按鈕, 索引) => 按鈕.addEventListener("click", () => 前往幕(索引)));
-上一幕按鈕.addEventListener("click", () => 前往幕(當前幕 - 1));
+上一幕按鈕.addEventListener("click", () => 前往幕(當前幕 - 1, true));
 下一幕按鈕.addEventListener("click", () => {
   if (當前幕 === 5) document.getElementById("免費諮詢").scrollIntoView({ behavior: 減少動態 ? "auto" : "smooth" });
-  else 前往幕(當前幕 + 1);
+  else 前往幕(當前幕 + 1, true);
 });
 加入清單按鈕.addEventListener("click", () => 記錄選擇("加入"));
 稍後再想按鈕.addEventListener("click", () => 記錄選擇("稍後"));
