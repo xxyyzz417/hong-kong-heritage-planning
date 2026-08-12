@@ -409,7 +409,7 @@ function 停止自動捲動() {
   下一幕按鈕.disabled = false;
 }
 
-function 勻速捲動至(目標位置, 時長 = 4200) {
+function 勻速捲動至(目標位置, 時長 = 5200) {
   停止自動捲動();
   if (減少動態) {
     window.scrollTo(0, 目標位置);
