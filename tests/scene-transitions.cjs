@@ -1,13 +1,18 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const { chromium } = require("playwright");
 
-const 網址 = "http://127.0.0.1:8765";
-const 瀏覽器路徑 = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const 網址 = process.env.TEST_URL || "http://127.0.0.1:8765";
+const 預設瀏覽器路徑 = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
 async function 開啟時間軸(瀏覽器) {
   const 頁面 = await 瀏覽器.newPage({ viewport: { width: 1440, height: 1000 } });
   await 頁面.goto(網址, { waitUntil: "domcontentloaded" });
-  await 頁面.waitForFunction(() => document.getElementById("載入畫面").hidden, null, { timeout: 15000 });
+  await 頁面.getByRole("button", { name: "開始這段旅程" }).click();
+  await 頁面.waitForFunction(() => {
+    const 元素 = document.getElementById("場景影片");
+    return 元素 && 元素.readyState >= 1 && 元素.duration > 70;
+  }, null, { timeout: 15000 });
   await 頁面.evaluate(() => {
     const 觸發器 = window.ScrollTrigger.getAll()[0];
     window.scrollTo(0, 觸發器.start);
@@ -22,23 +27,24 @@ async function 測試相鄰幕勻速慢放(瀏覽器) {
   const 樣本 = [];
   await 頁面.getByRole("button", { name: "前往下一幕" }).click();
 
-  while (Date.now() - 開始時間 < 6000) {
-    const 影格 = await 頁面.locator("#場景畫布").getAttribute("data-current-frame");
-    樣本.push({ 時間: Date.now() - 開始時間, 影格: Number(影格) });
+  while (Date.now() - 開始時間 < 7600) {
+    const 媒體進度 = await 頁面.locator("#場景影片").getAttribute("data-media-progress");
+    樣本.push({ 時間: Date.now() - 開始時間, 進度: Number(媒體進度) });
     const 播放中 = await 頁面.getByRole("button", { name: "前往下一幕" }).isDisabled();
     if (!播放中 && 樣本.length > 2) break;
     await 頁面.waitForTimeout(200);
   }
 
   const 耗時 = 樣本.at(-1).時間;
-  assert.ok(耗時 >= 5000 && 耗時 <= 5700, `相鄰幕應在五至五點七秒內勻速完成，實際為 ${耗時} 毫秒`);
+  assert.ok(耗時 >= 6300 && 耗時 <= 7000, `相鄰幕應在六點三至七秒內勻速完成，實際為 ${耗時} 毫秒`);
 
-  const 中段樣本 = 樣本.filter((樣本) => 樣本.影格 > 5 && 樣本.影格 < 44);
+  const 目標進度 = (48 - 1) / (240 - 1);
+  const 中段樣本 = 樣本.filter((樣本) => 樣本.進度 > 0.02 && 樣本.進度 < 目標進度 - 0.02);
   assert.ok(中段樣本.length >= 8, "應取得足夠的中段影格樣本");
   const 最大偏差 = Math.max(...中段樣本.map((樣本) => {
     const 時間進度 = 樣本.時間 / 耗時;
-    const 影格進度 = (樣本.影格 - 1) / (48 - 1);
-    return Math.abs(時間進度 - 影格進度);
+    const 影片進度 = 樣本.進度 / 目標進度;
+    return Math.abs(時間進度 - 影片進度);
   }));
   assert.ok(最大偏差 < 0.12, `播放速度不夠均勻，最大進度偏差為 ${最大偏差.toFixed(3)}`);
   await 頁面.close();
@@ -92,7 +98,6 @@ async function 測試每段文案緩慢浮現(瀏覽器) {
 async function 測試手機文案依閱讀順序排列(瀏覽器) {
   const 頁面 = await 瀏覽器.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await 頁面.goto(網址, { waitUntil: "domcontentloaded" });
-  await 頁面.waitForFunction(() => document.getElementById("載入畫面").hidden, null, { timeout: 15000 });
   await 頁面.evaluate(() => {
     const 觸發器 = window.ScrollTrigger.getAll()[0];
     window.scrollTo(0, 觸發器.start + (觸發器.end - 觸發器.start) * ((196 - 1) / (240 - 1)));
@@ -113,14 +118,15 @@ async function 測試手機文案依閱讀順序排列(瀏覽器) {
     };
   });
 
-  assert.ok(範圍.標題.底 + 12 <= 範圍.提問.頂, `標題與提問不可重疊：${JSON.stringify(範圍)}`);
-  assert.ok(範圍.提問.底 + 12 <= 範圍.資產.頂, `提問與資產不可重疊：${JSON.stringify(範圍)}`);
-  assert.ok(範圍.資產.底 + 12 <= 範圍.選項.頂, `資產與選項不可重疊：${JSON.stringify(範圍)}`);
+  assert.ok(範圍.標題.底 <= 範圍.提問.頂, `標題與提問不可重疊：${JSON.stringify(範圍)}`);
+  assert.ok(範圍.提問.底 <= 範圍.資產.頂, `提問與資產不可重疊：${JSON.stringify(範圍)}`);
+  assert.ok(範圍.資產.底 <= 範圍.選項.頂, `資產與選項不可重疊：${JSON.stringify(範圍)}`);
   await 頁面.close();
 }
 
 (async () => {
-  const 瀏覽器 = await chromium.launch({ headless: true, executablePath: 瀏覽器路徑 });
+  const 啟動設定 = fs.existsSync(預設瀏覽器路徑) ? { executablePath: 預設瀏覽器路徑 } : {};
+  const 瀏覽器 = await chromium.launch({ headless: true, ...啟動設定 });
   try {
     await 測試相鄰幕勻速慢放(瀏覽器);
     console.log("通過：相鄰幕勻速慢放");

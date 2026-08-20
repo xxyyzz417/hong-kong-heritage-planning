@@ -1,0 +1,12 @@
+.git/
+.github/
+.vercel/
+design/
+dist/
+docs/
+tests/
+video split to png for scrolltriger/
+PROJECT_HANDOFF.md
+README.md
+node_modules/
+*.log

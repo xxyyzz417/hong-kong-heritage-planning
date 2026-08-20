@@ -1,0 +1,38 @@
+name: 網站品質檢查
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 網站品質檢查-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  驗證:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 讀取程式碼
+        uses: actions/checkout@v4
+      - name: 安裝套件工具
+        uses: pnpm/action-setup@v4
+      - name: 準備執行環境
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: 安裝鎖定版本
+        run: pnpm install --frozen-lockfile
+      - name: 安裝瀏覽器
+        run: pnpm exec playwright install --with-deps chromium
+      - name: 建立正式靜態成品
+        run: pnpm run build
+      - name: 執行完整驗證
+        run: pnpm test

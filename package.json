@@ -1,0 +1,15 @@
+{
+  "name": "hong-kong-heritage-planning",
+  "version": "1.0.0",
+  "private": true,
+  "description": "以六幕香港生活場景梳理遺產分配意向的長者友善網站",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "serve": "node tests/static-server.cjs",
+    "test": "node tests/run-all.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

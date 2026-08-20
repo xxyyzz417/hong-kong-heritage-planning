@@ -4,3 +4,7 @@ Desktop.ini
 *.log
 .vscode/
 .idea/
+/video split to png for scrolltriger/
+/dist/
+/.vercel/
+/node_modules/

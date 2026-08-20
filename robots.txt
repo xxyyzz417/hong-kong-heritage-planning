@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://xxyyzz417.github.io/hong-kong-heritage-planning/sitemap.xml

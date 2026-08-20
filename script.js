@@ -1,7 +1,9 @@
 "use strict";
 
 const 總幀數 = 240;
-const 影格目錄 = "./video split to png for scrolltriger/";
+const 影片影格率 = 24;
+const 整理儲存鍵 = "遺產規劃安心清單";
+const 舊整理儲存鍵 = "安心清單";
 const 幕數文字 = ["一", "二", "三", "四", "五", "六"];
 const 短標題 = ["整理舊物", "同桌晚飯", "老友閒聊", "陪伴覆診", "接送放學", "安心梳理"];
 const 代表影格 = [1, 48, 96, 144, 196, 240];
@@ -9,7 +11,7 @@ const 幕定位進度 = 代表影格.map((影格) => (影格 - 1) / (總幀數 -
 
 const 右側漂浮 = {
   標題: [55, 12, 39],
-  對話: [58, 37, 36],
+  對話: [56, 34, 40],
   資產: [56, 55, 38],
   選擇: [54, 66, 41]
 };
@@ -102,13 +104,12 @@ const 場景資料 = [
   }
 ];
 
-const 畫布 = document.getElementById("場景畫布");
-const 繪圖環境 = 畫布.getContext("2d", { alpha: false });
+const 影片 = document.getElementById("場景影片");
+const 靜態場景 = document.getElementById("靜態場景");
+const 場景替代文字 = document.getElementById("場景替代文字");
+const 媒體狀態 = document.getElementById("媒體狀態");
+const 媒體切換按鈕 = document.getElementById("切換媒體模式");
 const 舞台 = document.getElementById("場景舞台");
-const 載入畫面 = document.getElementById("載入畫面");
-const 載入進度條 = document.getElementById("載入進度條");
-const 載入數值 = document.getElementById("載入數值");
-const 靜態繼續 = document.getElementById("靜態繼續");
 const 場景卡 = document.getElementById("場景卡");
 const 場景情緒 = document.getElementById("場景情緒");
 const 場景標題 = document.getElementById("場景標題");
@@ -125,128 +126,135 @@ const 加入清單按鈕 = document.getElementById("加入清單");
 const 稍後再想按鈕 = document.getElementById("稍後再想");
 const 清單內容 = document.getElementById("清單內容");
 
-const 已載入影格 = new Map();
-const 正在載入影格 = new Set();
-const 減少動態 = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const 移動裝置 = window.matchMedia("(max-width: 767px)").matches;
+const 減少動態查詢 = window.matchMedia("(prefers-reduced-motion: reduce)");
+const 移動裝置查詢 = window.matchMedia("(max-width: 767px)");
+let 減少動態 = 減少動態查詢.matches;
+let 移動裝置 = 移動裝置查詢.matches;
 const 節省數據 = Boolean(navigator.connection && navigator.connection.saveData);
-const 取樣間隔 = 節省數據 ? 2 : 1;
-const 鄰近半徑 = 節省數據 ? 4 : (移動裝置 ? 8 : 12);
 let 當前幕 = 0;
 let 當前影格 = 1;
-let 待繪影格 = 1;
-let 繪製請求 = 0;
+let 當前進度 = 0;
+let 待顯示進度 = 0;
+let 影片更新請求 = 0;
+let 影片準備工作 = null;
+let 使用靜態模式 = 減少動態 || 節省數據;
+let 使用者媒體選擇 = "";
 let 滾動觸發器 = null;
 let 自動捲動請求 = 0;
+let 自動捲動原始行為 = null;
 let 文案時間軸 = null;
-let 載入逾時計時器 = 0;
 let 整理狀態 = 讀取整理狀態();
 
-function 影格路徑(影格編號) {
-  return `${影格目錄}ezgif-frame-${String(影格編號).padStart(3, "0")}.png`;
+function 靜態場景路徑(幕索引) {
+  return `assets/media/scene-${String(幕索引 + 1).padStart(2, "0")}-v1.webp`;
 }
 
-function 載入影格(影格編號) {
-  const 安全影格 = Math.max(1, Math.min(總幀數, 影格編號));
-  if (已載入影格.has(安全影格)) return Promise.resolve(已載入影格.get(安全影格));
+function 顯示靜態場景(幕索引 = 當前幕) {
+  靜態場景.src = 靜態場景路徑(幕索引);
+  靜態場景.hidden = false;
+  影片.hidden = true;
+}
 
-  return new Promise((完成, 失敗) => {
-    if (正在載入影格.has(安全影格)) {
-      const 等候 = window.setInterval(() => {
-        if (已載入影格.has(安全影格)) {
-          window.clearInterval(等候);
-          完成(已載入影格.get(安全影格));
+function 更新媒體切換按鈕() {
+  媒體切換按鈕.setAttribute("aria-pressed", 使用靜態模式 ? "true" : "false");
+  媒體切換按鈕.textContent = 使用靜態模式 ? "開啟流動畫面" : "改用靜態畫面";
+}
+
+async function 選擇影片來源() {
+  const 裝置記憶體偏低 = Number(navigator.deviceMemory || 8) <= 4;
+  let 使用手機版本 = 移動裝置 || 裝置記憶體偏低;
+
+  if (!使用手機版本 && navigator.mediaCapabilities && navigator.mediaCapabilities.decodingInfo) {
+    try {
+      const 能力 = await navigator.mediaCapabilities.decodingInfo({
+        type: "file",
+        video: {
+          contentType: 'video/mp4; codecs="avc1.64001f"',
+          width: 1280,
+          height: 720,
+          bitrate: 4000000,
+          framerate: 24
         }
-      }, 40);
-      window.setTimeout(() => {
-        window.clearInterval(等候);
-        if (!已載入影格.has(安全影格)) 失敗(new Error("影格載入逾時"));
-      }, 10000);
-      return;
+      });
+      使用手機版本 = !能力.supported || !能力.smooth;
+    } catch {
+      使用手機版本 = false;
     }
+  }
 
-    正在載入影格.add(安全影格);
-    const 圖像 = new Image();
-    圖像.decoding = "async";
-    圖像.onload = () => {
-      正在載入影格.delete(安全影格);
-      已載入影格.set(安全影格, 圖像);
-      完成(圖像);
+  return 使用手機版本 ? 影片.dataset.mobileSrc : 影片.dataset.desktopSrc;
+}
+
+function 切換至靜態模式(提示 = "已改用靜態畫面", 清除影片 = false) {
+  使用靜態模式 = true;
+  影片.pause();
+  if (清除影片) {
+    影片.removeAttribute("src");
+    影片.load();
+  }
+  顯示靜態場景();
+  媒體狀態.textContent = 提示;
+  媒體狀態.hidden = false;
+  更新媒體切換按鈕();
+}
+
+function 準備影片() {
+  if (使用靜態模式) {
+    顯示靜態場景();
+    媒體狀態.textContent = 減少動態 ? "已按系統設定使用靜態畫面" : "已按節省數據設定使用靜態畫面";
+    return Promise.resolve(false);
+  }
+  if (影片.readyState >= 1 && 影片.currentSrc) {
+    影片.hidden = false;
+    靜態場景.hidden = true;
+    媒體狀態.hidden = true;
+    安排影片進度(當前進度);
+    return Promise.resolve(true);
+  }
+  if (影片準備工作) return 影片準備工作;
+
+  媒體狀態.textContent = "正在準備流動畫面";
+  影片準備工作 = 選擇影片來源().then((來源) => new Promise((完成) => {
+    const 成功 = () => {
+      影片.removeEventListener("error", 失敗);
+      影片.hidden = false;
+      靜態場景.hidden = true;
+      媒體狀態.hidden = true;
+      安排影片進度(當前進度);
+      完成(true);
     };
-    圖像.onerror = () => {
-      正在載入影格.delete(安全影格);
-      失敗(new Error(`未能載入第${安全影格}幀`));
+    const 失敗 = () => {
+      影片.removeEventListener("loadedmetadata", 成功);
+      切換至靜態模式("流動畫面未能載入，已改用靜態畫面", true);
+      完成(false);
     };
-    圖像.src = 影格路徑(安全影格);
-  });
+    影片.addEventListener("loadedmetadata", 成功, { once: true });
+    影片.addEventListener("error", 失敗, { once: true });
+    影片.src = 來源;
+    影片.defaultMuted = true;
+    影片.muted = true;
+    影片.load();
+  }));
+  return 影片準備工作;
 }
 
-function 預載鄰近影格(中心影格) {
-  const 待載入 = [];
-  for (let 偏移 = -鄰近半徑; 偏移 <= 鄰近半徑; 偏移 += 取樣間隔) {
-    const 編號 = Math.max(1, Math.min(總幀數, 中心影格 + 偏移));
-    if (!已載入影格.has(編號) && !正在載入影格.has(編號)) 待載入.push(編號);
+function 安排影片進度(進度) {
+  待顯示進度 = Math.max(0, Math.min(1, 進度));
+  當前影格 = 計算影格(待顯示進度);
+  更新文案位置(當前影格);
+  if (使用靜態模式) {
+    顯示靜態場景(取得最近幕(待顯示進度));
+    return;
   }
-  待載入.forEach((編號) => 載入影格(編號).catch(() => {}));
-}
+  if (影片.readyState < 1 || !影片.duration || 影片更新請求) return;
 
-function 找出可用影格(目標影格) {
-  if (已載入影格.has(目標影格)) return 已載入影格.get(目標影格);
-  for (let 距離 = 1; 距離 <= 鄰近半徑 + 4; 距離 += 1) {
-    if (已載入影格.has(目標影格 - 距離)) return 已載入影格.get(目標影格 - 距離);
-    if (已載入影格.has(目標影格 + 距離)) return 已載入影格.get(目標影格 + 距離);
-  }
-  return 已載入影格.get(代表影格[當前幕]) || 已載入影格.get(1);
-}
-
-function 調整畫布尺寸() {
-  const 像素比例 = Math.min(window.devicePixelRatio || 1, 移動裝置 ? 1.5 : 2);
-  const 寬度 = Math.max(1, Math.round(舞台.clientWidth * 像素比例));
-  const 高度 = Math.max(1, Math.round(舞台.clientHeight * 像素比例));
-  if (畫布.width !== 寬度 || 畫布.height !== 高度) {
-    畫布.width = 寬度;
-    畫布.height = 高度;
-  }
-  安排繪製(當前影格);
-}
-
-function 繪製影格(影格編號) {
-  const 圖像 = 找出可用影格(影格編號);
-  if (!圖像) return;
-
-  const 畫布比例 = 畫布.width / 畫布.height;
-  const 圖像比例 = 圖像.naturalWidth / 圖像.naturalHeight;
-  let 繪製寬度;
-  let 繪製高度;
-  let 水平位置;
-  let 垂直位置;
-
-  if (圖像比例 > 畫布比例) {
-    繪製高度 = 畫布.height;
-    繪製寬度 = 繪製高度 * 圖像比例;
-    水平位置 = (畫布.width - 繪製寬度) / 2;
-    垂直位置 = 0;
-  } else {
-    繪製寬度 = 畫布.width;
-    繪製高度 = 繪製寬度 / 圖像比例;
-    水平位置 = 0;
-    垂直位置 = (畫布.height - 繪製高度) / 2;
-  }
-
-  繪圖環境.fillStyle = "#2b1b10";
-  繪圖環境.fillRect(0, 0, 畫布.width, 畫布.height);
-  繪圖環境.drawImage(圖像, 水平位置, 垂直位置, 繪製寬度, 繪製高度);
-}
-
-function 安排繪製(影格編號) {
-  待繪影格 = 影格編號;
-  if (繪製請求) return;
-  繪製請求 = window.requestAnimationFrame(() => {
-    繪製請求 = 0;
-    當前影格 = 待繪影格;
-    畫布.setAttribute("data-current-frame", String(待繪影格));
-    繪製影格(待繪影格);
-    更新文案位置(待繪影格);
+  影片更新請求 = window.requestAnimationFrame(() => {
+    影片更新請求 = 0;
+    const 最後影格時間 = Math.max(0, 影片.duration - (1 / 影片影格率));
+    const 目標時間 = 待顯示進度 >= 1 ? 最後影格時間 : 待顯示進度 * 影片.duration;
+    if (Math.abs(影片.currentTime - 目標時間) >= 1 / 影片影格率) 影片.currentTime = 目標時間;
+    影片.dataset.currentFrame = String(Math.round(目標時間 * 影片影格率) + 1);
+    影片.dataset.mediaProgress = 待顯示進度.toFixed(4);
   });
 }
 
@@ -296,22 +304,20 @@ function 更新文案位置(影格編號) {
   const 原始佈局 = 取得逐幀佈局(影格編號);
   const 佈局 = 移動裝置 ? 轉為移動版佈局(原始佈局) : 原始佈局;
   const 對照 = {
-    標題: ["--標題左", "--標題頂", "--標題寬"],
-    對話: ["--對話左", "--對話頂", "--對話寬"],
-    資產: ["--資產左", "--資產頂", "--資產寬"],
-    選擇: ["--選擇左", "--選擇頂", "--選擇寬"]
+    標題: ["--標題左值", "--標題頂值", "--標題寬值"],
+    對話: ["--對話左值", "--對話頂值", "--對話寬值"],
+    資產: ["--資產左值", "--資產頂值", "--資產寬值"],
+    選擇: ["--選擇左值", "--選擇頂值", "--選擇寬值"]
   };
 
   Object.entries(對照).forEach(([區塊, 屬性]) => {
-    屬性.forEach((名稱, 索引) => 場景卡.style.setProperty(名稱, `${佈局[區塊][索引].toFixed(2)}%`));
+    屬性.forEach((名稱, 索引) => 場景卡.style.setProperty(名稱, 佈局[區塊][索引].toFixed(2)));
   });
 }
 
 function 計算影格(進度) {
   const 線性進度 = Math.max(0, Math.min(1, 進度));
-  const 原始影格 = Math.floor(線性進度 * (總幀數 - 1)) + 1;
-  if (取樣間隔 === 1 || 代表影格.includes(原始影格)) return 原始影格;
-  return Math.min(總幀數, Math.max(1, Math.round((原始影格 - 1) / 取樣間隔) * 取樣間隔 + 1));
+  return Math.floor(線性進度 * (總幀數 - 1)) + 1;
 }
 
 function 取得最近幕(進度) {
@@ -369,16 +375,16 @@ function 更新場景(幕索引, 不使用動畫 = false) {
     }));
     大型幕數.textContent = 幕數文字[幕索引];
     進度文字.textContent = `第${幕數文字[幕索引]}幕，共六幕｜${短標題[幕索引]}`;
-    畫布.setAttribute("aria-label", `第${幕數文字[幕索引]}幕，${資料.標題}。${資料.畫面}`);
+    場景替代文字.textContent = `第${幕數文字[幕索引]}幕，${資料.標題}。${資料.畫面}`;
     進度按鈕.forEach((按鈕, 索引) => {
       if (索引 === 幕索引) 按鈕.setAttribute("aria-current", "step");
       else 按鈕.removeAttribute("aria-current");
     });
     上一幕按鈕.hidden = 幕索引 === 0;
     下一幕按鈕.innerHTML = 幕索引 === 5
-      ? "<span>免費諮詢</span><span aria-hidden=\"true\">→</span>"
+      ? "<span>查看專業支援</span><span aria-hidden=\"true\">→</span>"
       : "<span>前往下一幕</span><span aria-hidden=\"true\">→</span>";
-    下一幕按鈕.setAttribute("aria-label", 幕索引 === 5 ? "前往免費諮詢" : "前往下一幕");
+    下一幕按鈕.setAttribute("aria-label", 幕索引 === 5 ? "查看專業支援" : "前往下一幕");
     更新選擇按鈕();
   };
 
@@ -393,11 +399,10 @@ function 更新場景(幕索引, 不使用動畫 = false) {
 }
 
 function 處理進度(進度) {
+  當前進度 = Math.max(0, Math.min(1, 進度));
   const 幕索引 = 取得最近幕(進度);
-  const 影格編號 = 減少動態 ? 代表影格[幕索引] : 計算影格(進度);
   進度線.style.setProperty("--旅程進度", Math.max(0, Math.min(1, 進度)).toFixed(4));
-  安排繪製(影格編號);
-  預載鄰近影格(影格編號);
+  安排影片進度(進度);
   if (幕索引 !== 當前幕) 更新場景(幕索引);
 }
 
@@ -405,11 +410,15 @@ function 停止自動捲動() {
   if (!自動捲動請求) return;
   window.cancelAnimationFrame(自動捲動請求);
   自動捲動請求 = 0;
+  if (自動捲動原始行為 !== null) {
+    document.documentElement.style.scrollBehavior = 自動捲動原始行為;
+    自動捲動原始行為 = null;
+  }
   上一幕按鈕.disabled = false;
   下一幕按鈕.disabled = false;
 }
 
-function 勻速捲動至(目標位置, 時長 = 5200) {
+function 勻速捲動至(目標位置, 時長 = 6500) {
   停止自動捲動();
   if (減少動態) {
     window.scrollTo(0, 目標位置);
@@ -418,6 +427,8 @@ function 勻速捲動至(目標位置, 時長 = 5200) {
 
   const 起點位置 = window.scrollY;
   const 開始時間 = window.performance.now();
+  自動捲動原始行為 = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = "auto";
   上一幕按鈕.disabled = true;
   下一幕按鈕.disabled = true;
 
@@ -429,6 +440,8 @@ function 勻速捲動至(目標位置, 時長 = 5200) {
       return;
     }
     自動捲動請求 = 0;
+    document.documentElement.style.scrollBehavior = 自動捲動原始行為 || "";
+    自動捲動原始行為 = null;
     上一幕按鈕.disabled = false;
     下一幕按鈕.disabled = false;
   };
@@ -440,7 +453,7 @@ function 前往幕(幕索引, 勻速播放 = false) {
   const 安全索引 = Math.max(0, Math.min(5, 幕索引));
   if (!滾動觸發器) {
     更新場景(安全索引);
-    安排繪製(代表影格[安全索引]);
+    安排影片進度(幕定位進度[安全索引]);
     return;
   }
   const 目標位置 = 滾動觸發器.start + 幕定位進度[安全索引] * (滾動觸發器.end - 滾動觸發器.start);
@@ -458,7 +471,7 @@ function 建立滾動體驗() {
   滾動觸發器 = window.ScrollTrigger.create({
     trigger: "#人生時間軸",
     start: "top top",
-    end: () => `+=${Math.max(window.innerHeight * 13, 9000)}`,
+    end: () => `+=${減少動態 ? Math.max(window.innerHeight * 6, 4200) : Math.max(window.innerHeight * 13, 9000)}`,
     pin: "#場景舞台",
     anticipatePin: 1,
     invalidateOnRefresh: true,
@@ -481,8 +494,10 @@ function 建立原生備援() {
 
 function 讀取整理狀態() {
   try {
-    const 資料 = JSON.parse(window.localStorage.getItem("安心清單") || "{}");
-    return typeof 資料 === "object" && 資料 ? 資料 : {};
+    const 新資料 = JSON.parse(window.localStorage.getItem(整理儲存鍵) || "null");
+    if (新資料 && 新資料.版本 === 1 && typeof 新資料.選擇 === "object" && 新資料.選擇) return 新資料.選擇;
+    const 舊資料 = JSON.parse(window.localStorage.getItem(舊整理儲存鍵) || "{}");
+    return typeof 舊資料 === "object" && 舊資料 ? 舊資料 : {};
   } catch {
     return {};
   }
@@ -490,7 +505,12 @@ function 讀取整理狀態() {
 
 function 儲存整理狀態() {
   try {
-    window.localStorage.setItem("安心清單", JSON.stringify(整理狀態));
+    window.localStorage.setItem(整理儲存鍵, JSON.stringify({
+      版本: 1,
+      更新時間: new Date().toISOString(),
+      選擇: 整理狀態
+    }));
+    window.localStorage.removeItem(舊整理儲存鍵);
   } catch {
     return;
   }
@@ -500,8 +520,10 @@ function 更新選擇按鈕() {
   const 狀態 = 整理狀態[當前幕];
   加入清單按鈕.classList.toggle("已選擇", 狀態 === "加入");
   稍後再想按鈕.classList.toggle("已選擇", 狀態 === "稍後");
-  加入清單按鈕.querySelector("span").textContent = 狀態 === "加入" ? "已放進我的安心清單" : "建議：放進我的安心清單";
-  稍後再想按鈕.querySelector("span").textContent = 狀態 === "稍後" ? "已記下：稍後再想" : "稍後再想（不加入清單）";
+  加入清單按鈕.setAttribute("aria-pressed", 狀態 === "加入" ? "true" : "false");
+  稍後再想按鈕.setAttribute("aria-pressed", 狀態 === "稍後" ? "true" : "false");
+  加入清單按鈕.querySelector("span").textContent = 狀態 === "加入" ? "已放進我的安心清單" : "放進我的安心清單";
+  稍後再想按鈕.querySelector("span").textContent = 狀態 === "稍後" ? "已記下：稍後再想" : "稍後再想";
 }
 
 function 記錄選擇(選擇) {
@@ -534,199 +556,182 @@ function 更新安心清單() {
   清單內容.replaceChildren(清單);
 }
 
-async function 準備首批影格() {
-  let 已完成數量 = 0;
-  const 首批 = Array.from(new Set(代表影格));
-  載入逾時計時器 = window.setTimeout(() => {
-    靜態繼續.hidden = false;
-    載入數值.textContent = "載入時間較長，您可改以靜態內容繼續";
-  }, 10000);
+function 建立安心摘要文字() {
+  const 已加入 = 場景資料
+    .map((資料, 索引) => ({ 資料, 索引 }))
+    .filter(({ 索引 }) => 整理狀態[索引] === "加入");
+  const 日期 = new Intl.DateTimeFormat("zh-HK", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  }).format(new Date());
+  const 內容 = 已加入.length
+    ? 已加入.flatMap(({ 資料, 索引 }) => [
+      `第${幕數文字[索引]}幕｜${資料.標題}`,
+      `我的想法：希望優先整理`,
+      `涉及事項：${資料.資產.join("、")}`,
+      ""
+    ])
+    : ["目前尚未把任何事項放進安心清單。", ""];
 
-  await Promise.allSettled(首批.map(async (編號) => {
-    await 載入影格(編號);
-    已完成數量 += 1;
-    const 百分比 = Math.round((已完成數量 / 首批.length) * 100);
-    載入進度條.style.width = `${百分比}%`;
-    載入數值.textContent = `百分之${轉為中文數字(百分比)}`;
-    if (編號 === 1) 繪製影格(1);
-  }));
-
-  window.clearTimeout(載入逾時計時器);
-  if (!已載入影格.size) {
-    靜態繼續.hidden = false;
-    載入數值.textContent = "未能載入動態場景，請以靜態內容繼續";
-    return;
-  }
-  載入進度條.style.width = "100%";
-  載入數值.textContent = "百分之一百";
-  window.setTimeout(() => 載入畫面.classList.add("已完成"), 250);
-  window.setTimeout(() => { 載入畫面.hidden = true; }, 800);
-  預載鄰近影格(1);
+  return [
+    "香港遺產規劃｜我的安心摘要",
+    `整理日期：${日期}`,
+    "",
+    ...內容,
+    "這份摘要只整理您的初步想法，不構成法律、稅務或投資意見。",
+    "正式安排前，請向具備相應資格的香港專業人士查詢。"
+  ].join("\r\n");
 }
 
-function 轉為中文數字(數值) {
-  const 字 = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-  if (數值 === 100) return "一百";
-  if (數值 < 10) return 字[數值];
-  const 十位 = Math.floor(數值 / 10);
-  const 個位 = 數值 % 10;
-  return `${十位 === 1 ? "" : 字[十位]}十${個位 ? 字[個位] : ""}`;
+function 下載安心摘要() {
+  const 檔案 = new Blob([建立安心摘要文字()], { type: "text/plain;charset=utf-8" });
+  const 下載網址 = URL.createObjectURL(檔案);
+  const 連結 = document.createElement("a");
+  const 日期 = new Date().toISOString().slice(0, 10);
+  連結.href = 下載網址;
+  連結.download = `我的安心摘要-${日期}.txt`;
+  document.body.append(連結);
+  連結.click();
+  連結.remove();
+  window.setTimeout(() => URL.revokeObjectURL(下載網址), 1000);
 }
 
-const 回電對話 = document.getElementById("回電對話");
-const 回電標題 = document.getElementById("回電標題");
-const 對話步驟 = document.getElementById("對話步驟");
-const 回電內容 = document.getElementById("回電內容");
-let 回電資料 = { 時段: "", 稱呼: "", 電話: "" };
+async function 分享安心摘要() {
+  const 分享資料 = {
+    title: "香港遺產規劃｜我的安心摘要",
+    text: 建立安心摘要文字(),
+    url: window.location.href.split("#")[0]
+  };
+  const 摘要狀態 = document.getElementById("摘要狀態");
 
-function 顯示回電步驟(步驟) {
-  if (步驟 === 1) {
-    對話步驟.textContent = "第一步，共三步";
-    回電標題.textContent = "甚麼時候聯絡您較方便？";
-    回電內容.innerHTML = `
-      <div class="回電選項">
-        <button type="button">上午</button>
-        <button type="button">下午</button>
-        <button type="button">其他時間，由專員先與我確認</button>
-      </div>`;
-    Array.from(回電內容.querySelectorAll("button")).forEach((按鈕) => {
-      按鈕.addEventListener("click", () => {
-        回電資料.時段 = 按鈕.textContent.trim();
-        顯示回電步驟(2);
-      });
-    });
-  }
-
-  if (步驟 === 2) {
-    對話步驟.textContent = "第二步，共三步";
-    回電標題.textContent = "專員應如何稱呼您？";
-    回電內容.innerHTML = `
-      <div class="回電欄位">
-        <label for="回電稱呼">您的稱呼</label>
-        <input id="回電稱呼" type="text" autocomplete="name" maxlength="30" placeholder="請輸入稱呼">
-        <small>只需填寫您希望專員使用的稱呼。</small>
-      </div>
-      <div class="回電操作">
-        <button type="button" id="返回時段">返回</button>
-        <button class="繼續按鈕" type="button" id="前往電話">繼續</button>
-      </div>`;
-    document.getElementById("回電稱呼").value = 回電資料.稱呼;
-    document.getElementById("返回時段").addEventListener("click", () => 顯示回電步驟(1));
-    document.getElementById("前往電話").addEventListener("click", () => {
-      const 稱呼 = document.getElementById("回電稱呼").value.trim();
-      if (!稱呼) {
-        document.getElementById("回電稱呼").focus();
-        return;
-      }
-      回電資料.稱呼 = 稱呼;
-      顯示回電步驟(3);
-    });
-    document.getElementById("回電稱呼").focus();
-  }
-
-  if (步驟 === 3) {
-    對話步驟.textContent = "第三步，共三步";
-    回電標題.textContent = "專員可致電哪個號碼？";
-    回電內容.innerHTML = `
-      <div class="回電欄位">
-        <label for="回電電話">香港聯絡電話</label>
-        <input id="回電電話" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="請輸入聯絡電話">
-        <small>正式接收預約的方式仍待確認，現階段資料不會傳送。</small>
-      </div>
-      <div class="回電操作">
-        <button type="button" id="返回稱呼">返回</button>
-        <button class="繼續按鈕" type="button" id="核對回電">核對資料</button>
-      </div>`;
-    document.getElementById("回電電話").value = 回電資料.電話;
-    document.getElementById("返回稱呼").addEventListener("click", () => 顯示回電步驟(2));
-    document.getElementById("核對回電").addEventListener("click", () => {
-      const 電話 = document.getElementById("回電電話").value.trim();
-      if (!電話) {
-        document.getElementById("回電電話").focus();
-        return;
-      }
-      回電資料.電話 = 電話;
-      顯示回電摘要();
-    });
-    document.getElementById("回電電話").focus();
+  try {
+    if (navigator.share) {
+      await navigator.share(分享資料);
+      摘要狀態.textContent = "摘要已準備分享";
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(分享資料.text);
+      摘要狀態.textContent = "摘要已複製，您可貼到訊息中分享";
+      return;
+    }
+    下載安心摘要();
+    摘要狀態.textContent = "這個瀏覽器未提供分享功能，已改為下載摘要";
+  } catch (錯誤) {
+    摘要狀態.textContent = 錯誤 && 錯誤.name === "AbortError" ? "已取消分享" : "未能分享，請改用下載摘要";
   }
 }
 
-function 顯示回電摘要() {
-  對話步驟.textContent = "資料核對";
-  回電標題.textContent = "請核對您的回電安排";
-  回電內容.innerHTML = `
-    <div class="回電摘要">
-      <p><strong>稱呼：</strong><span id="摘要稱呼"></span></p>
-      <p><strong>方便時段：</strong><span id="摘要時段"></span></p>
-      <p><strong>聯絡電話：</strong><span id="摘要電話"></span></p>
-    </div>
-    <p>待確認：正式預約接收方式。現階段不會把以上資料傳送至任何地方。</p>
-    <div class="回電操作">
-      <button type="button" id="返回修改">返回修改</button>
-      <button class="繼續按鈕" type="button" id="完成整理">完成整理</button>
-    </div>`;
-  document.getElementById("摘要稱呼").textContent = 回電資料.稱呼;
-  document.getElementById("摘要時段").textContent = 回電資料.時段;
-  document.getElementById("摘要電話").textContent = 回電資料.電話;
-  document.getElementById("返回修改").addEventListener("click", () => 顯示回電步驟(3));
-  document.getElementById("完成整理").addEventListener("click", () => {
-    回電標題.textContent = "回電資料已整理";
-    對話步驟.textContent = "已完成";
-    回電內容.innerHTML = "<p>您的資料仍只保留在這個畫面。待正式預約接收方式確認後，才可提交回電要求。</p><div class=\"回電操作\"><button class=\"繼續按鈕\" type=\"button\" id=\"關閉完成\">關閉</button></div>";
-    document.getElementById("關閉完成").addEventListener("click", () => 回電對話.close());
-  });
+function 列印安心摘要() {
+  window.print();
 }
 
 document.getElementById("開始旅程").addEventListener("click", () => {
+  void 準備影片();
   document.getElementById("人生時間軸").scrollIntoView({ behavior: 減少動態 ? "auto" : "smooth" });
+  window.setTimeout(() => document.getElementById("人生時間軸").focus({ preventScroll: true }), 減少動態 ? 0 : 700);
 });
 
-document.getElementById("返回時間軸").addEventListener("click", () => 前往幕(當前幕));
+媒體切換按鈕.addEventListener("click", () => {
+  if (!使用靜態模式) {
+    使用者媒體選擇 = "靜態";
+    切換至靜態模式("已按您的選擇改用靜態畫面");
+    return;
+  }
+  使用者媒體選擇 = "流動";
+  使用靜態模式 = false;
+  媒體狀態.hidden = false;
+  媒體狀態.textContent = "正在準備流動畫面";
+  更新媒體切換按鈕();
+  影片準備工作 = null;
+  void 準備影片();
+});
+
+document.getElementById("返回時間軸").addEventListener("click", () => {
+  前往幕(當前幕);
+  window.setTimeout(() => document.getElementById("人生時間軸").focus({ preventScroll: true }), 減少動態 ? 0 : 700);
+});
+document.getElementById("下載摘要").addEventListener("click", 下載安心摘要);
+document.getElementById("分享摘要").addEventListener("click", 分享安心摘要);
+document.getElementById("列印摘要").addEventListener("click", 列印安心摘要);
 進度按鈕.forEach((按鈕, 索引) => 按鈕.addEventListener("click", () => 前往幕(索引)));
 上一幕按鈕.addEventListener("click", () => 前往幕(當前幕 - 1, true));
 下一幕按鈕.addEventListener("click", () => {
-  if (當前幕 === 5) document.getElementById("免費諮詢").scrollIntoView({ behavior: 減少動態 ? "auto" : "smooth" });
-  else 前往幕(當前幕 + 1, true);
+  if (當前幕 === 5) {
+    const 支援區 = document.getElementById("專業支援");
+    支援區.scrollIntoView({ behavior: 減少動態 ? "auto" : "smooth" });
+    window.setTimeout(() => 支援區.focus({ preventScroll: true }), 減少動態 ? 0 : 700);
+  } else 前往幕(當前幕 + 1, true);
 });
 加入清單按鈕.addEventListener("click", () => 記錄選擇("加入"));
 稍後再想按鈕.addEventListener("click", () => 記錄選擇("稍後"));
 
-document.getElementById("要求回電").addEventListener("click", () => {
-  回電資料 = { 時段: "", 稱呼: "", 電話: "" };
-  顯示回電步驟(1);
-  回電對話.showModal();
+document.getElementById("支援下載摘要").addEventListener("click", 下載安心摘要);
+
+window.addEventListener("wheel", 停止自動捲動, { passive: true });
+window.addEventListener("touchstart", 停止自動捲動, { passive: true });
+window.addEventListener("keydown", (事件) => {
+  if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(事件.key)) 停止自動捲動();
 });
-document.getElementById("關閉回電").addEventListener("click", () => 回電對話.close());
-回電對話.addEventListener("click", (事件) => {
-  if (事件.target === 回電對話) 回電對話.close();
+
+document.querySelectorAll(".略過連結").forEach((連結) => {
+  連結.addEventListener("click", () => {
+    const 目標 = document.querySelector(連結.getAttribute("href"));
+    if (目標) window.setTimeout(() => 目標.focus({ preventScroll: true }), 0);
+  });
+});
+
+減少動態查詢.addEventListener("change", (事件) => {
+  減少動態 = 事件.matches;
+  if (減少動態 && 使用者媒體選擇 !== "流動") 切換至靜態模式("已按系統設定使用靜態畫面");
+  if (!減少動態 && !節省數據 && 使用者媒體選擇 !== "靜態") {
+    使用靜態模式 = false;
+    影片準備工作 = null;
+    更新媒體切換按鈕();
+    void 準備影片();
+  }
+  if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+});
+
+移動裝置查詢.addEventListener("change", (事件) => {
+  移動裝置 = 事件.matches;
+  更新文案位置(當前影格);
+  if (window.ScrollTrigger) window.ScrollTrigger.refresh();
 });
 
 document.getElementById("清除記錄").addEventListener("click", () => {
   const 確定清除 = window.confirm("確定清除這部裝置上的安心清單嗎？清除後不能復原。");
   if (!確定清除) return;
   整理狀態 = {};
-  try { window.localStorage.removeItem("安心清單"); } catch {}
+  try {
+    window.localStorage.removeItem(整理儲存鍵);
+    window.localStorage.removeItem(舊整理儲存鍵);
+  } catch {}
   更新選擇按鈕();
   更新安心清單();
-});
-
-靜態繼續.addEventListener("click", () => {
-  window.clearTimeout(載入逾時計時器);
-  載入畫面.hidden = true;
-  更新場景(0, true);
 });
 
 let 尺寸計時器 = 0;
 window.addEventListener("resize", () => {
   window.clearTimeout(尺寸計時器);
   尺寸計時器 = window.setTimeout(() => {
-    調整畫布尺寸();
+    更新文案位置(當前影格);
     if (window.ScrollTrigger) window.ScrollTrigger.refresh();
   }, 180);
 });
 
 更新場景(0, true);
 更新安心清單();
-調整畫布尺寸();
-準備首批影格().then(建立滾動體驗);
+安排影片進度(0);
+更新媒體切換按鈕();
+建立滾動體驗();
+
+if ("IntersectionObserver" in window) {
+  const 媒體觀察器 = new IntersectionObserver((項目) => {
+    if (!項目.some((觀察項目) => 觀察項目.isIntersecting)) return;
+    媒體觀察器.disconnect();
+    void 準備影片();
+  }, { rootMargin: "-10% 0px" });
+  媒體觀察器.observe(document.getElementById("人生時間軸"));
+}
