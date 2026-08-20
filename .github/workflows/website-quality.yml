@@ -20,14 +20,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: 讀取程式碼
-        uses: actions/checkout@v4
-      - name: 安裝套件工具
-        uses: pnpm/action-setup@v4
-      - name: 準備執行環境
-        uses: actions/setup-node@v4
+        uses: actions/checkout@v6
+      - name: 準備執行環境與套件工具
+        uses: pnpm/setup@v1
         with:
-          node-version: 22
-          cache: pnpm
+          runtime: node@22
+          cache: true
+          install: false
       - name: 安裝鎖定版本
         run: pnpm install --frozen-lockfile
       - name: 安裝瀏覽器
