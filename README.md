@@ -66,4 +66,4 @@ pnpm test
 
 - GitHub：<https://github.com/xxyyzz417/hong-kong-heritage-planning>
 - GitHub Pages：<https://xxyyzz417.github.io/hong-kong-heritage-planning/>
-- Vercel：完成正式部署後記錄於 `docs/DEPLOYMENT.md`
+- Vercel：外掛部署已建立但受帳戶登入保護；公開狀態及解除方式記錄於 `docs/DEPLOYMENT.md`

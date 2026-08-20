@@ -4,7 +4,7 @@
 
 ## 本輪目標與目前狀態
 
-目標是把視覺原型升級為可維護、可驗證、可部署的香港遺產意向梳理工具。正式介面、影片管線、安心摘要、私隱邊界、無障礙佈局、白名單建置及自動測試已完成；GitHub 與 Vercel 發布資料須在每次發布後補上實際版本及網址。
+目標是把視覺原型升級為可維護、可驗證、可部署的香港遺產意向梳理工具。正式介面、影片管線、安心摘要、私隱邊界、無障礙佈局、白名單建置及自動測試已完成。GitHub Pages 已公開發布並通過線上驗證；Vercel 外掛亦建立了正式部署，但目前受帳戶的 Vercel Authentication 保護，不能視為公開正式網址。
 
 核心使用者為六十五歲以上香港居民。網站透過六幕生活場景整理牽掛，最後產生可下載、列印或分享的「安心摘要」。
 
@@ -65,6 +65,9 @@ Three.js 不能補回抽幀造成的時間資訊，也不會改善影片網絡�
 - GitHub Pages：<https://xxyyzz417.github.io/hong-kong-heritage-planning/>
 - Vercel 團隊：`team_C83TZYxBGJP5DTxpT1VoudGp`
 - Vercel 正式資料：見 `docs/DEPLOYMENT.md`
-- 目前發布版本：待本輪正式部署後填入
+- 已驗證應用版本：`fc7c6e8`
+- GitHub 品質流程：`32403665295`，成功
+- GitHub Pages 流程：`32403664116`，成功
+- Vercel 狀態：部署已建立但要求登入；目前公開正式網址仍為 GitHub Pages
 
 後續對話先閱讀本檔及 `docs/ENGINEERING_LOG.md`，再以 `git status`、`git log -1` 及正式網址驗證現況，不需要重新做素材診斷。
