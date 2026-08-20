@@ -16,7 +16,7 @@ async function 取得可見尺寸問題(頁面) {
       .filter((元素) => 可見(元素) && 元素.textContent.trim())
       .filter((元素) => Number.parseFloat(getComputedStyle(元素).fontSize) < 20)
       .map((元素) => `${元素.tagName.toLowerCase()}.${元素.className || "無類別"}:${getComputedStyle(元素).fontSize}`);
-    const 行距問題 = Array.from(document.querySelectorAll("p, li, a, button, small, strong"))
+    const 行距問題 = Array.from(document.querySelectorAll("p, li, a, button, small, strong, h1, h2, h3"))
       .filter((元素) => 可見(元素) && !元素.closest('[aria-hidden="true"]') && !元素.classList.contains("視覺隱藏") && 元素.textContent.trim())
       .filter((元素) => {
         const 樣式 = getComputedStyle(元素);
