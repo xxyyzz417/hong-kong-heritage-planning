@@ -92,7 +92,7 @@
 
 ### 發布結果
 
-- `main` 的已驗證應用提交為 `fc7c6e8`；GitHub 品質流程 `32403665295` 及 Pages 流程 `32403664116` 均成功。
+- `main` 的已驗證應用提交為 `dd948a6`；該版本把所有可見標題也納入一點六行距的硬性測試，八組本機測試均成功。GitHub Actions 元件其後於 `95786a6` 升級至支援新執行環境的版本；品質流程 `32406101360` 及 Pages 流程 `32406094483` 均成功且沒有舊執行環境警告。
 - 公開網站為 <https://xxyyzz417.github.io/hong-kong-heritage-planning/>；七組會操作真實頁面的線上測試全部通過。
 - GitHub Pages 對桌面影片的位元組範圍請求回應 `206`、`Accept-Ranges: bytes`、一千零二十四位元組內容及正確範圍。
 - Vercel 外掛建立正式部署 `dpl_GWEjvVZW9H3GMZPHku3mvzobJrKt`，但帳戶層的 Vercel Authentication 仍把未登入訪客帶往登入頁，故不列為公開正式站。

@@ -65,9 +65,9 @@ Three.js 不能補回抽幀造成的時間資訊，也不會改善影片網絡�
 - GitHub Pages：<https://xxyyzz417.github.io/hong-kong-heritage-planning/>
 - Vercel 團隊：`team_C83TZYxBGJP5DTxpT1VoudGp`
 - Vercel 正式資料：見 `docs/DEPLOYMENT.md`
-- 已驗證應用版本：`fc7c6e8`
-- GitHub 品質流程：`32403665295`，成功
-- GitHub Pages 流程：`32403664116`，成功
+- 已驗證應用版本：`dd948a6`
+- GitHub 品質流程：`32406101360`，成功
+- GitHub Pages 流程：`32406094483`，成功
 - Vercel 狀態：部署已建立但要求登入；目前公開正式網址仍為 GitHub Pages
 
 後續對話先閱讀本檔及 `docs/ENGINEERING_LOG.md`，再以 `git status`、`git log -1` 及正式網址驗證現況，不需要重新做素材診斷。

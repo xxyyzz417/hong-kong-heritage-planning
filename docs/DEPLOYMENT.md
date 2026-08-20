@@ -11,9 +11,9 @@
 - 儲存庫：<https://github.com/xxyyzz417/hong-kong-heritage-planning>
 - GitHub Pages：<https://xxyyzz417.github.io/hong-kong-heritage-planning/>
 - 正式分支：`main`
-- 已驗證應用提交：`fc7c6e8`
-- 品質流程：`32403665295`，成功
-- Pages 流程：`32403664116`，成功
+- 已驗證應用提交：`dd948a6`
+- 品質流程：`32406101360`，成功
+- Pages 流程：`32406094483`，成功
 
 推送至 `main` 後，GitHub Actions 會安裝鎖定套件、建立 `dist` 並執行完整瀏覽器測試。GitHub Pages 現為已驗證的公開正式網址；首頁、六幕互動、影片範圍請求及七組線上瀏覽器測試均通過。
 
