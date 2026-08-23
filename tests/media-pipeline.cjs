@@ -29,6 +29,23 @@ async function 測試高密度圖片序列映射() {
     assert.ok(初始請求.length > 0 && 初始請求.length < 80, `初始只可預載小量鄰近影格，實際為 ${初始請求.length}`);
     assert.equal(請求網址.filter((網址字串) => /\.mp4(?:$|\?)/.test(網址字串)).length, 0, "旅程不可再下載需要遠端定位的整段影片");
 
+    await 頁面.waitForTimeout(2500);
+    await 頁面.evaluate(() => {
+      const 觸發器 = window.ScrollTrigger.getAll().find((項目) => 項目.trigger && 項目.trigger.id === "人生時間軸");
+      window.scrollTo(0, 觸發器.start);
+    });
+    await 頁面.waitForTimeout(300);
+    const 滾輪前位置 = await 頁面.evaluate(() => window.scrollY);
+    const 滾輪前影格 = Number(await 畫布.getAttribute("data-current-frame"));
+    await 頁面.mouse.move(720, 500);
+    await 頁面.mouse.wheel(0, 300);
+    await 頁面.waitForFunction(({ 位置, 影格 }) => {
+      const 畫面 = document.getElementById("場景畫布");
+      return window.scrollY > 位置 && Number(畫面?.dataset.currentFrame) > 影格;
+    }, { 位置: 滾輪前位置, 影格: 滾輪前影格 }, { timeout: 3000 });
+    const 滾輪目標影格 = Number(await 畫布.getAttribute("data-current-frame"));
+    await 頁面.waitForFunction((目標) => Number(document.getElementById("場景畫布")?.dataset.drawnFrame) >= 目標 - 1, 滾輪目標影格, { timeout: 5000 });
+
     await 頁面.evaluate(() => {
       const 觸發器 = window.ScrollTrigger.getAll().find((項目) =>項目.trigger && 項目.trigger.id === "人生時間軸");
       window.scrollTo(0, 觸發器.start + (觸發器.end - 觸發器.start) * 0.5);

@@ -135,11 +135,14 @@ const 減少動態 = window.matchMedia("(prefers-reduced-motion: reduce)").match
 const 移動裝置 = window.matchMedia("(max-width: 767px)").matches;
 const 節省數據 = Boolean(navigator.connection && navigator.connection.saveData);
 const 取樣間隔 = 節省數據 ? 2 : 1;
-const 鄰近半徑 = 節省數據 ? 6 : (移動裝置 ? 24 : 36);
+const 鄰近半徑 = 節省數據 ? 2 : (移動裝置 ? 4 : 6);
 let 當前幕 = 0;
 let 當前影格 = 1;
 let 待繪影格 = 1;
 let 繪製請求 = 0;
+let 最新預載中心 = 1;
+let 上次預載時間 = 0;
+let 延後預載計時器 = 0;
 let 滾動觸發器 = null;
 let 自動捲動請求 = 0;
 let 文案時間軸 = null;
@@ -197,6 +200,17 @@ function 預載鄰近影格(中心影格) {
     if (!已載入影格.has(編號) && !正在載入影格.has(編號)) 待載入.push({ 編號, 優先載入: 偏移 === 0 });
   }
   待載入.forEach(({ 編號, 優先載入 }) => 載入影格(編號, 優先載入).catch(() => {}));
+}
+
+function 排程預載鄰近影格(中心影格) {
+  最新預載中心 = 中心影格;
+  if (延後預載計時器) return;
+  const 尚需等候 = Math.max(0, 80 - (window.performance.now() - 上次預載時間));
+  延後預載計時器 = window.setTimeout(() => {
+    延後預載計時器 = 0;
+    上次預載時間 = window.performance.now();
+    預載鄰近影格(最新預載中心);
+  }, 尚需等候);
 }
 
 function 找出可用影格(目標影格) {
@@ -424,7 +438,7 @@ function 處理進度(進度) {
   const 影格編號 = 減少動態 ? 代表影格[幕索引] : 計算影格(進度);
   進度線.style.setProperty("--旅程進度", Math.max(0, Math.min(1, 進度)).toFixed(4));
   安排繪製(影格編號);
-  預載鄰近影格(影格編號);
+  排程預載鄰近影格(影格編號);
   if (幕索引 !== 當前幕) 更新場景(幕索引);
 }
 
