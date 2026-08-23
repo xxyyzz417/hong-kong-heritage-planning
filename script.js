@@ -135,7 +135,7 @@ const 減少動態 = window.matchMedia("(prefers-reduced-motion: reduce)").match
 const 移動裝置 = window.matchMedia("(max-width: 767px)").matches;
 const 節省數據 = Boolean(navigator.connection && navigator.connection.saveData);
 const 取樣間隔 = 節省數據 ? 2 : 1;
-const 鄰近半徑 = 節省數據 ? 4 : (移動裝置 ? 8 : 12);
+const 鄰近半徑 = 節省數據 ? 6 : (移動裝置 ? 24 : 36);
 let 當前幕 = 0;
 let 當前影格 = 1;
 let 待繪影格 = 1;
@@ -630,7 +630,7 @@ async function 分享安心摘要() {
 
 async function 準備首批影格() {
   let 已完成數量 = 0;
-  const 首批 = Array.from(new Set(代表影格));
+  const 首批 = [1];
   載入逾時計時器 = window.setTimeout(() => {
     靜態繼續.hidden = false;
     載入數值.textContent = "載入時間較長，您可改以靜態內容繼續";
@@ -655,7 +655,10 @@ async function 準備首批影格() {
   載入數值.textContent = "百分之一百";
   window.setTimeout(() => 載入畫面.classList.add("已完成"), 250);
   window.setTimeout(() => { 載入畫面.hidden = true; }, 800);
-  預載鄰近影格(1);
+  window.setTimeout(() => 預載鄰近影格(1), 500);
+  window.setTimeout(() => {
+    代表影格.slice(1).forEach((編號) => 載入影格(編號).catch(() => {}));
+  }, 2000);
 }
 
 function 轉為中文數字(數值) {
