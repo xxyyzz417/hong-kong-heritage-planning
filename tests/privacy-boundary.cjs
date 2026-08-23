@@ -15,7 +15,7 @@ async function 測試私隱與服務邊界() {
     assert.equal(await 頁面.locator("form, input, select, textarea").count(), 0, "未有正式接收端點前不應收集個人資料");
     assert.equal(await 頁面.getByRole("button", { name: /要求專員回電/ }).count(), 0, "不應保留看似可提交但實際不會傳送的回電按鈕");
 
-    const 支援區 = 頁面.locator("#專業支援");
+    const 支援區 = 頁面.locator("#免費諮詢");
     await 支援區.scrollIntoViewIfNeeded();
     assert.match(await 支援區.innerText(), /正式免費諮詢服務：待確認/, "應清楚標示尚未啟用的正式服務");
     assert.match(await 支援區.innerText(), /不會要求提供網上銀行密碼、提款卡密碼或一次性驗證碼/, "應顯示具體防詐騙提示");

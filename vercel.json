@@ -40,7 +40,7 @@
       ]
     },
     {
-      "source": "/assets/media/(.*)",
+      "source": "/assets/frames/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

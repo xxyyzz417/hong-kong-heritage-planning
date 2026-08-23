@@ -10,9 +10,11 @@ async function 開啟時間軸(瀏覽器) {
   await 頁面.goto(網址, { waitUntil: "domcontentloaded" });
   await 頁面.getByRole("button", { name: "開始這段旅程" }).click();
   await 頁面.waitForFunction(() => {
-    const 元素 = document.getElementById("場景影片");
-    return 元素 && 元素.readyState >= 1 && 元素.duration > 70;
+    const 元素 = document.getElementById("場景畫布");
+    return Number(元素?.dataset.drawnFrame) >= 1;
   }, null, { timeout: 15000 });
+  await 頁面.waitForFunction(() => window.ScrollTrigger?.getAll().length > 0, null, { timeout: 15000 });
+  await 頁面.waitForTimeout(1000);
   await 頁面.evaluate(() => {
     const 觸發器 = window.ScrollTrigger.getAll()[0];
     window.scrollTo(0, 觸發器.start);
@@ -28,8 +30,8 @@ async function 測試相鄰幕勻速慢放(瀏覽器) {
   await 頁面.getByRole("button", { name: "前往下一幕" }).click();
 
   while (Date.now() - 開始時間 < 7600) {
-    const 媒體進度 = await 頁面.locator("#場景影片").getAttribute("data-media-progress");
-    樣本.push({ 時間: Date.now() - 開始時間, 進度: Number(媒體進度) });
+    const 當前影格 = await 頁面.locator("#場景畫布").getAttribute("data-current-frame");
+    樣本.push({ 時間: Date.now() - 開始時間, 進度: (Number(當前影格) - 1) / 959 });
     const 播放中 = await 頁面.getByRole("button", { name: "前往下一幕" }).isDisabled();
     if (!播放中 && 樣本.length > 2) break;
     await 頁面.waitForTimeout(200);
@@ -38,7 +40,7 @@ async function 測試相鄰幕勻速慢放(瀏覽器) {
   const 耗時 = 樣本.at(-1).時間;
   assert.ok(耗時 >= 6300 && 耗時 <= 7000, `相鄰幕應在六點三至七秒內勻速完成，實際為 ${耗時} 毫秒`);
 
-  const 目標進度 = (48 - 1) / (240 - 1);
+  const 目標進度 = (190 - 1) / 959;
   const 中段樣本 = 樣本.filter((樣本) => 樣本.進度 > 0.02 && 樣本.進度 < 目標進度 - 0.02);
   assert.ok(中段樣本.length >= 8, "應取得足夠的中段影格樣本");
   const 最大偏差 = Math.max(...中段樣本.map((樣本) => {

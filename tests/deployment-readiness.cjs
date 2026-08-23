@@ -27,15 +27,14 @@ function 測試正式部署準備度() {
   ];
   必要檔案.forEach((相對路徑) => assert.ok(fs.existsSync(path.join(根目錄, 相對路徑)), `缺少正式部署檔案：${相對路徑}`));
 
-  assert.ok(檔案大小("assets/media/heritage-scroll-1280-v1.mp4") < 40 * 1024 * 1024, "桌面影片必須低於四十百萬位元組");
-  assert.ok(檔案大小("assets/media/heritage-scroll-960-v1.mp4") < 20 * 1024 * 1024, "手機影片必須低於二十百萬位元組");
-  const 靜態圖總量 = fs.readdirSync(path.join(根目錄, "assets/media"))
-    .filter((名稱) => 名稱.endsWith(".webp"))
-    .reduce((總數, 名稱) => 總數 + 檔案大小(path.join("assets/media", 名稱)), 0);
-  assert.ok(靜態圖總量 < 1024 * 1024, "六張靜態備援圖總量必須低於一百萬位元組");
+  const 影格名稱 = fs.readdirSync(path.join(根目錄, "assets/frames")).filter((名稱) => /^frame-\d{4}\.webp$/.test(名稱));
+  assert.equal(影格名稱.length, 960, "正式圖片序列必須包含九百六十張影格");
+  const 影格總量 = 影格名稱.reduce((總數, 名稱) => 總數 + 檔案大小(path.join("assets/frames", 名稱)), 0);
+  assert.ok(影格總量 < 50 * 1024 * 1024, "圖片序列總量必須低於五十百萬位元組");
 
   const 網頁 = 讀取文字("index.html");
-  assert.doesNotMatch(網頁, /\.png|場景畫布|video split to png/i, "正式網頁不得再引用舊圖片序列或畫布");
+  assert.match(網頁, /id="場景畫布"/, "正式網頁必須提供圖片序列畫布");
+  assert.doesNotMatch(網頁, /\.png|video split to png|<video/i, "正式網頁不得再引用舊 PNG 或影片元素");
   assert.match(網頁, /rel="canonical" href="https:\/\//, "正式網頁必須提供絕對標準網址");
   assert.match(網頁, /property="og:locale" content="zh_HK"/, "正式網頁必須提供香港繁體中文分享語系");
 
@@ -46,7 +45,7 @@ function 測試正式部署準備度() {
   ["Content-Security-Policy", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy"].forEach((名稱) => {
     assert.ok(標頭名稱.has(名稱), `缺少安全標頭：${名稱}`);
   });
-  const 媒體標頭 = 設定.headers.find((項目) => 項目.source.includes("assets/media"));
+  const 媒體標頭 = 設定.headers.find((項目) => 項目.source.includes("assets/frames"));
   assert.match(JSON.stringify(媒體標頭), /max-age=31536000.*immutable/, "版本化媒體必須設定一年不可變快取");
 
   const 建立結果 = spawnSync(process.execPath, [path.join(根目錄, "scripts/build.cjs")], { cwd: 根目錄, encoding: "utf8" });

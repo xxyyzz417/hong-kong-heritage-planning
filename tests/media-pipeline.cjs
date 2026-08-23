@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const 網址 = process.env.TEST_URL || "http://127.0.0.1:8765";
 const 預設瀏覽器路徑 = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
-async function 測試完整幀率影片映射() {
+async function 測試高密度圖片序列映射() {
   const 啟動設定 = fs.existsSync(預設瀏覽器路徑) ? { executablePath: 預設瀏覽器路徑 } : {};
   const 瀏覽器 = await chromium.launch({ headless: true, ...啟動設定 });
   const 頁面 = await 瀏覽器.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -14,48 +14,37 @@ async function 測試完整幀率影片映射() {
 
   try {
     await 頁面.goto(網址, { waitUntil: "domcontentloaded" });
-    const 影片 = 頁面.locator("#場景影片");
-    await assert.doesNotReject(() => 影片.waitFor({ state: "attached", timeout: 2000 }), "時間軸應使用原生影片元素");
-    assert.equal(await 頁面.locator("#場景畫布").count(), 0, "正式版不應再以畫布繪製 PNG 序列");
+    const 畫布 = 頁面.locator("#場景畫布");
+    await assert.doesNotReject(() => 畫布.waitFor({ state: "attached", timeout: 2000 }), "時間軸應使用畫布繪製圖片序列");
+    assert.equal(await 頁面.locator("#場景影片").count(), 0, "圖片序列版不應再依賴遠端影片定位");
     await 頁面.waitForTimeout(400);
-    assert.equal(請求網址.filter((網址字串) => /\.mp4(?:$|\?)/.test(網址字串)).length, 0, "用戶仍停留開篇時不應提前下載影片");
+    assert.ok(請求網址.filter((網址字串) => /frame-\d+\.webp(?:$|\?)/.test(網址字串)).length < 40, "開篇只可準備代表影格與第一幕鄰近影格");
 
     await 頁面.getByRole("button", { name: "開始這段旅程" }).click();
-    await 頁面.waitForFunction(() => {
-      const 元素 = document.getElementById("場景影片");
-      return 元素 && 元素.readyState >= 1 && 元素.duration > 70;
-    }, null, { timeout: 15000 });
-
-    const 媒體設定 = await 影片.evaluate((元素) => ({
-      來源: 元素.currentSrc,
-      靜音: 元素.muted,
-      自動播放: 元素.autoplay,
-      時長: 元素.duration
-    }));
-    assert.match(媒體設定.來源, /\.mp4(?:$|\?)/, "場景來源應為 MP4 影片");
-    assert.equal(媒體設定.靜音, true, "場景影片必須靜音");
-    assert.equal(媒體設定.自動播放, false, "場景影片不可自動播放");
-    const 影片請求 = [...new Set(請求網址.filter((網址字串) => /\.mp4(?:$|\?)/.test(網址字串)))];
-    assert.equal(影片請求.length, 1, "每部裝置只應下載一個合適解像度的影片版本");
+    await 頁面.waitForFunction(() => Number(document.getElementById("場景畫布")?.dataset.drawnFrame) >= 1, null, { timeout: 15000 });
+    const 初始請求 = [...new Set(請求網址.filter((網址字串) => /frame-\d+\.webp(?:$|\?)/.test(網址字串)))];
+    assert.ok(初始請求.length > 0 && 初始請求.length < 80, `初始只可預載小量鄰近影格，實際為 ${初始請求.length}`);
+    assert.equal(請求網址.filter((網址字串) => /\.mp4(?:$|\?)/.test(網址字串)).length, 0, "旅程不可再下載需要遠端定位的整段影片");
 
     await 頁面.evaluate(() => {
       const 觸發器 = window.ScrollTrigger.getAll().find((項目) =>項目.trigger && 項目.trigger.id === "人生時間軸");
       window.scrollTo(0, 觸發器.start + (觸發器.end - 觸發器.start) * 0.5);
     });
     await 頁面.waitForFunction(() => {
-      const 元素 = document.getElementById("場景影片");
-      return Math.abs(元素.currentTime - 元素.duration * 0.5) < 1.5;
+      const 元素 = document.getElementById("場景畫布");
+      const 影格 = Number(元素?.dataset.drawnFrame);
+      return 影格 >= 470 && 影格 <= 490;
     }, null, { timeout: 5000 });
 
-    const 舊序列請求 = 請求網址.filter((網址字串) => 網址字串.includes("video%20split%20to%20png") || /ezgif-frame-\d+\.png/.test(網址字串));
-    assert.deepEqual(舊序列請求, [], "瀏覽旅程時不應再請求舊 PNG 序列");
+    const 舊媒體請求 = 請求網址.filter((網址字串) => 網址字串.includes("video%20split%20to%20png") || /ezgif-frame-\d+\.png/.test(網址字串) || /\.mp4(?:$|\?)/.test(網址字串));
+    assert.deepEqual(舊媒體請求, [], "瀏覽旅程時不應再請求舊 PNG 或 MP4 媒體");
   } finally {
     await 瀏覽器.close();
   }
 }
 
-測試完整幀率影片映射()
-  .then(() => console.log("通過：完整幀率影片隨捲動線性映射"))
+測試高密度圖片序列映射()
+  .then(() => console.log("通過：高密度圖片序列隨捲動線性映射"))
   .catch((錯誤) => {
     console.error(錯誤.message);
     process.exit(1);

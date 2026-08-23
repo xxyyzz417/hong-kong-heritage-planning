@@ -12,7 +12,7 @@ const 公開白名單 = [
   "robots.txt",
   "sitemap.xml",
   "assets/vendor",
-  "assets/media"
+  "assets/frames"
 ];
 
 if (path.dirname(成品目錄) !== 專案根目錄 || path.basename(成品目錄) !== "dist") {
