@@ -46,6 +46,16 @@ const 左側分散 = {
   選擇: [4, 66, 43]
 };
 
+const 幕固定佈局 = [
+  右側漂浮,
+  上下分散,
+  第三幕左上分散,
+  右側漂浮,
+  左側分散,
+  右側漂浮
+];
+
+
 const 文案位置關鍵點 = [
   { 影格: 對應新影格(1), 佈局: 右側漂浮 },
   { 影格: 對應新影格(34), 佈局: 右側漂浮 },
@@ -334,8 +344,9 @@ function 轉為移動版佈局(佈局) {
 }
 
 function 更新文案位置(影格編號) {
-  const 原始佈局 = 取得逐幀佈局(影格編號);
-  const 佈局 = 移動裝置 ? 轉為移動版佈局(原始佈局) : 原始佈局;
+  const 佈局 = 移動裝置
+    ? 轉為移動版佈局(幕固定佈局[當前幕])
+    : 幕固定佈局[當前幕];
   const 對照 = {
     標題: ["--標題左", "--標題頂", "--標題寬"],
     對話: ["--對話左", "--對話頂", "--對話寬"],
@@ -375,6 +386,14 @@ function 播放文案浮現() {
   const 文案區塊 = 取得文案區塊();
   if (文案時間軸) 文案時間軸.kill();
 
+  // 先把文字放到這一幕的最終固定位置，再開始淡入，避免從上一幕位置飄過來
+  try {
+    更新文案位置(代表影格[當前幕]);
+  } catch (錯誤) {
+    console.warn("設定固定位置失敗", 錯誤);
+  }
+
+
   if (減少動態 || !window.gsap) {
     文案區塊.forEach((區塊) => {
       區塊.style.opacity = "1";
@@ -384,13 +403,13 @@ function 播放文案浮現() {
     return;
   }
 
-  window.gsap.set(文案區塊, { autoAlpha: 0, y: 22 });
+  window.gsap.set(文案區塊, { autoAlpha: 0 });
   文案時間軸 = window.gsap.timeline();
   文案時間軸
-    .to(文案區塊[0], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 0)
-    .to(文案區塊[1], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 1.5)
-    .to(文案區塊[2], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 3)
-    .to(文案區塊[3], { autoAlpha: 1, y: 0, duration: 1, ease: "power1.out" }, 4.6);
+    .to(文案區塊[0], { autoAlpha: 1, duration: 1, ease: "power1.out" }, 0)
+    .to(文案區塊[1], { autoAlpha: 1, duration: 1, ease: "power1.out" }, 1.5)
+    .to(文案區塊[2], { autoAlpha: 1, duration: 1, ease: "power1.out" }, 3)
+    .to(文案區塊[3], { autoAlpha: 1, duration: 1, ease: "power1.out" }, 4.6);
 }
 
 function 更新場景(幕索引, 不使用動畫 = false) {
